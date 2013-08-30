@@ -44,19 +44,11 @@
   duplicate = (object)->
     extend {}, object
 
-  contains = (item, array)->
-    inArray(item, array) != -1
-
-  escapeSelector = (selector)->
-    selector.replace /([\!\"\#\$\%\&'\(\)\*\+\,\.\/\:\;<\=>\?\@\[\\\]\^\`\{\|\}\~])/g, "\\$1"
-
-  clean = (arr, reject)->
-    map arr, (item)->
-      if item == reject then null else item
-
-  unique = (arr)->
-    map arr, (item, index)->
-      if index == arr.indexOf(item) then item else null
+  isEmptyObject = (obj)->
+    return no unless obj && typeof obj is 'object'
+    for key of obj
+      return no if Object.prototype.hasOwnProperty.call(obj, key)
+    yes
 
   diffObjects = (obj1, obj2)->
     obj1 = duplicate obj1
@@ -66,17 +58,17 @@
       value2 = obj2[key]
       delete obj2[key]
       if /^(string|number|boolean)$/.test(typeof value2) or value2 instanceof Array
-        diff[key] = value2
+        diff[key] = value2 if value2 != value
       else if typeof value2 is 'object'
-        diff[key] = diffObjects value, value2
+        obj = diffObjects value, value2
+        diff[key] = obj unless isEmptyObject obj
       else
         diff[key] = null
     extend diff, obj2
 
   class ElementDiff
-    constructor: (element, options)->
+    constructor: (element)->
       @element = element
-      @options = extend(extend({}, $.elementDiff.options), options)
 
     toString: -> "[ElementDiff: #{@element[0]}]"
 
@@ -94,17 +86,13 @@
   #----------------------------------------------
 
   $.elementDiff =
-    options: {}
-    unique: unique
-    clean: clean
-    escapeSelector: escapeSelector
     diffObjects: diffObjects
+    isEmptyObject: isEmptyObject
 
-  $.fn.elementDiff = (options)->
-    new ElementDiff($(@), options)
+  $.fn.elementDiff = -> new ElementDiff @
 
-  $.fn.getElementDiff = (element2, options)->
-    @elementDiff(options).getDiff(element2)
+  $.fn.getElementDiff = (element2)->
+    @elementDiff().getDiff(element2)
 
   _attr = $.fn.attr
   $.fn.attr =->

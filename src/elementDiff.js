@@ -1,7 +1,7 @@
 (function() {
 
   (function($) {
-    var ElementDiff, clean, console, contains, diffObjects, duplicate, escapeSelector, extend, getAttributes, inArray, map, unique, _attr;
+    var ElementDiff, console, diffObjects, duplicate, extend, getAttributes, inArray, isEmptyObject, map, _attr;
     console = window.console;
     map = $.map;
     extend = $.extend;
@@ -44,32 +44,20 @@
     duplicate = function(object) {
       return extend({}, object);
     };
-    contains = function(item, array) {
-      return inArray(item, array) !== -1;
-    };
-    escapeSelector = function(selector) {
-      return selector.replace(/([\!\"\#\$\%\&'\(\)\*\+\,\.\/\:\;<\=>\?\@\[\\\]\^\`\{\|\}\~])/g, "\\$1");
-    };
-    clean = function(arr, reject) {
-      return map(arr, function(item) {
-        if (item === reject) {
-          return null;
-        } else {
-          return item;
+    isEmptyObject = function(obj) {
+      var key;
+      if (!(obj && typeof obj === 'object')) {
+        return false;
+      }
+      for (key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          return false;
         }
-      });
-    };
-    unique = function(arr) {
-      return map(arr, function(item, index) {
-        if (index === arr.indexOf(item)) {
-          return item;
-        } else {
-          return null;
-        }
-      });
+      }
+      return true;
     };
     diffObjects = function(obj1, obj2) {
-      var diff, key, value, value2;
+      var diff, key, obj, value, value2;
       obj1 = duplicate(obj1);
       obj2 = duplicate(obj2);
       diff = {};
@@ -78,9 +66,14 @@
         value2 = obj2[key];
         delete obj2[key];
         if (/^(string|number|boolean)$/.test(typeof value2) || value2 instanceof Array) {
-          diff[key] = value2;
+          if (value2 !== value) {
+            diff[key] = value2;
+          }
         } else if (typeof value2 === 'object') {
-          diff[key] = diffObjects(value, value2);
+          obj = diffObjects(value, value2);
+          if (!isEmptyObject(obj)) {
+            diff[key] = obj;
+          }
         } else {
           diff[key] = null;
         }
@@ -89,9 +82,8 @@
     };
     ElementDiff = (function() {
 
-      function ElementDiff(element, options) {
+      function ElementDiff(element) {
         this.element = element;
-        this.options = extend(extend({}, $.elementDiff.options), options);
       }
 
       ElementDiff.prototype.toString = function() {
@@ -116,17 +108,14 @@
 
     })();
     $.elementDiff = {
-      options: {},
-      unique: unique,
-      clean: clean,
-      escapeSelector: escapeSelector,
-      diffObjects: diffObjects
+      diffObjects: diffObjects,
+      isEmptyObject: isEmptyObject
     };
-    $.fn.elementDiff = function(options) {
-      return new ElementDiff($(this), options);
+    $.fn.elementDiff = function() {
+      return new ElementDiff(this);
     };
-    $.fn.getElementDiff = function(element2, options) {
-      return this.elementDiff(options).getDiff(element2);
+    $.fn.getElementDiff = function(element2) {
+      return this.elementDiff().getDiff(element2);
     };
     _attr = $.fn.attr;
     $.fn.attr = function() {

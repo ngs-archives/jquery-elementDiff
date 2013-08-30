@@ -13,11 +13,28 @@
       else
         fixtureHTML = @fdiv.html()
 
-  test '@options', ->
-    $.elementDiff.options = { foo: 'bar' }
-    deepEqual $('a').elementDiff().options, { foo: 'bar' }, 'extends default options'
-    deepEqual $('a').elementDiff({ bar: 2 }).options, { foo: 'bar', bar: 2 }, 'merges options and default options'
-    deepEqual $('a').elementDiff({ foo: 3 }).options, { foo: 3 }, 'argument wins'
+  test ':isEmptyObject', ->
+    ok  $.elementDiff.isEmptyObject {},    'returns true for empty object'
+    ok !$.elementDiff.isEmptyObject a: 1,  'returns false for object with property'
+    ok !$.elementDiff.isEmptyObject null,  'returns false if it is null'
+    ok !$.elementDiff.isEmptyObject 'foo', 'returns false if it is a string'
+    ok !$.elementDiff.isEmptyObject 1,     'returns false if it is a number'
+    ok !$.elementDiff.isEmptyObject true,  'returns false if it is a boolean'
+    ok !$.elementDiff.isEmptyObject false, 'returns false if it is a boolean'
+
+  test ':diffObjects', ->
+    deepEqual $.elementDiff.diffObjects({ a: 1 }, { a: 1 }),
+      {}, 'returns empty object for non-diff objects'
+    deepEqual $.elementDiff.diffObjects({ a: 1 }, { a: 2 }),
+      { a: 2 }, 'returns diff'
+    deepEqual $.elementDiff.diffObjects({ a: 1 }, { a: '1' }),
+      { a: '1' }, 'returns diff with different types'
+    deepEqual $.elementDiff.diffObjects({ a: 1 }, { a: true }),
+      { a: true }, 'returns diff with different types'
+    deepEqual $.elementDiff.diffObjects({ a: 1 }, { a: 1, b: 2 }),
+      { b: 2 }, 'returns diff with new property'
+    deepEqual $.elementDiff.diffObjects({ a: 1, b: { c: 1 } }, { a: 1, b: { c: 2 } }),
+      { b: { c: 2 } }, ''
 
   test '@diffAttributes', ->
     ed = $('#test1 > a').elementDiff()
