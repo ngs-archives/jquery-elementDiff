@@ -1,4 +1,4 @@
-/*! jQuery Element Diff - v0.1.0 - 2013-08-31
+/*! jQuery Element Diff - v0.1.0 - 2013-09-01
  * https://github.com/ngs/jquery-elementDiff
  * Copyright (c) 2013 Atsushi Nagase; Licensed MIT */
 (function() {
@@ -6,8 +6,7 @@
   (function($) {
     "use strict";
 
-    var ElementDiff, VALUE_REGEX, console, diffObjects, duplicate, extend, flattenAttributes, inArray, isEmptyObject, isValue, map, merge;
-    console = window.console;
+    var ElementDiff, VALUE_REGEX, diffObjects, duplicate, extend, flattenAttributes, inArray, isEmptyObject, isValue, map, merge, nullDeeply, outerHTML;
     map = $.map;
     extend = $.extend;
     inArray = $.inArray;
@@ -27,30 +26,41 @@
       }
       return true;
     };
-    VALUE_REGEX = /^(string|number|boolean)$/;
+    VALUE_REGEX = /^(string|number|boolean|undefined)$/;
     isValue = function(obj) {
       return !obj || VALUE_REGEX.test(typeof obj) || obj instanceof Array;
     };
+    nullDeeply = function(obj) {
+      var key, value;
+      if (isValue(obj)) {
+        return null;
+      }
+      for (key in obj) {
+        value = obj[key];
+        obj[key] = nullDeeply(value);
+      }
+      return obj;
+    };
     diffObjects = function(obj1, obj2) {
-      var diff, key, obj, value, value2;
+      var diff, key, obj, value1, value2;
       obj1 = duplicate(obj1);
       obj2 = duplicate(obj2);
       diff = {};
       for (key in obj1) {
-        value = obj1[key];
+        value1 = obj1[key];
         value2 = obj2[key];
         delete obj2[key];
-        if (isValue(value2)) {
-          if (value2 !== value) {
+        if (isValue(value2) && isValue(value1)) {
+          if (value2 !== value1) {
             diff[key] = value2;
           }
         } else if (typeof value2 === 'object') {
-          obj = diffObjects(value, value2);
+          obj = diffObjects(value1, value2);
           if (!isEmptyObject(obj)) {
             diff[key] = obj;
           }
         } else {
-          diff[key] = null;
+          diff[key] = nullDeeply(value1);
         }
       }
       return extend(diff, obj2);
@@ -78,6 +88,11 @@
       }
       return attrs2;
     };
+    outerHTML = function(element) {
+      var div;
+      div = $('<div />').append(element.clone());
+      return $.trim(div.html()).replace(/\s*\n\s*/g, '');
+    };
     ElementDiff = (function() {
 
       function ElementDiff(element, selector) {
@@ -94,9 +109,13 @@
 
       ElementDiff.diffObjects = diffObjects;
 
+      ElementDiff.flattenAttributes = flattenAttributes;
+
       ElementDiff.isEmptyObject = isEmptyObject;
 
-      ElementDiff.flattenAttributes = flattenAttributes;
+      ElementDiff.nullDeeply = nullDeeply;
+
+      ElementDiff.outerHTML = outerHTML;
 
       ElementDiff.prototype.generateCode = function(method) {
         var args, strArguments;
@@ -151,8 +170,8 @@
         return this.element.prop('nodeName') === $(element2).prop('nodeName');
       };
 
-      ElementDiff.prototype.getDiff = function(element2) {
-        var code, codes, div, element1;
+      ElementDiff.prototype.diff = function(element2) {
+        var code, codes, element1;
         element1 = this.element;
         element2 = $(element2);
         if (!(element2 && element2.size())) {
@@ -163,8 +182,7 @@
           merge(codes, this.diffAttributes(element2));
           merge(codes, this.diffText(element2));
         } else {
-          div = $('<div />').append(element2.clone());
-          codes.push(this.generateCode('replaceWith', div.html()));
+          codes.push(this.generateCode('replaceWith', outerHTML(element2)));
         }
         if (codes.length) {
           code = codes.join('.');
@@ -178,19 +196,38 @@
         }
       };
 
-      ElementDiff.prototype.getDiffRecursive = function(element2) {
-        var children1, children2, codes, element1, size1, size2;
-        element1 = this.element;
+      ElementDiff.prototype.diffRecursive = function(element2) {
+        var children1, children2, codes, element1, index, myDiff, selector, self, size1, size2;
+        self = this;
+        element1 = self.element;
         element2 = $(element2);
-        codes = this.getDiff(element2);
+        myDiff = self.diff(element2);
+        if (/\.(empty|replaceWith)\(/.test(myDiff[0])) {
+          return myDiff;
+        }
+        codes = [];
+        selector = self.selector;
         children1 = element1.children();
         children2 = element2.children();
         size1 = children1.size();
         size2 = children2.size();
-        children2.each(function(index, element) {
-          return console.log(index, element);
+        children2.each(function(index) {
+          var child1, child2, childSelector;
+          child1 = $(children1[index]);
+          child2 = $(children2[index]);
+          childSelector = "" + selector + " > :eq(" + index + ")";
+          if (child1.size()) {
+            return merge(codes, new ElementDiff(child1, childSelector).diffRecursive(child2));
+          } else {
+            return codes.push("$(\"" + selector + "\")." + (self.generateCode('append', outerHTML(child2))));
+          }
         });
-        return 1;
+        index = size1;
+        while (index > size2) {
+          codes.push("$(\"" + selector + " > :eq(" + (--index) + ")\")." + (self.generateCode('remove')));
+        }
+        merge(codes, myDiff);
+        return codes;
       };
 
       return ElementDiff;
@@ -201,7 +238,7 @@
       return new ElementDiff(this, selector);
     };
     $.fn.getElementDiff = function(element2, selector) {
-      return this.elementDiff(selector).getDiff(element2);
+      return this.elementDiff(selector).diffRecursive(element2);
     };
     return this;
   })(jQuery);

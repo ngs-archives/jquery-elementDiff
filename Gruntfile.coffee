@@ -50,7 +50,7 @@ module.exports = (grunt)->
         files: '<%= jshint.src.src %>'
         tasks: ['jshint:src', 'qunit']
       test:
-        files: '<%= jshint.test.src %>',
+        files: ['<%= jshint.test.src %>', 'test/<%= pkg.name %>_test.html'],
         tasks: ['jshint:test', 'qunit']
 
   # These plugins provide necessary tasks.

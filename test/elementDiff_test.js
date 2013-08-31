@@ -1,12 +1,24 @@
 (function() {
 
   (function($) {
-    var console, fdiv, fixtureHTML;
+    var console, evalScript, fdiv, fixtureHTML, outerHTML, rollbackFixture;
     console = window.console;
     fdiv = function() {
       return $("#qunit-fixture");
     };
     fixtureHTML = null;
+    outerHTML = $.elementDiff.outerHTML;
+    rollbackFixture = function() {
+      return fdiv().html(fixtureHTML);
+    };
+    evalScript = function(script) {
+      /* jshint -W054
+      */
+
+      var f;
+      f = new Function("$", script.join(';'));
+      return f.call(this, $);
+    };
     module("jquery-elementDiff", {
       setup: function() {
         this.fdiv = fdiv();
@@ -16,6 +28,19 @@
           return fixtureHTML = this.fdiv.html();
         }
       }
+    });
+    test(':nullDeeply', function() {
+      return deepEqual($.elementDiff.nullDeeply({
+        a: 1,
+        b: {
+          c: 1
+        }
+      }), {
+        a: null,
+        b: {
+          c: null
+        }
+      });
     });
     test(':isEmptyObject', function() {
       ok($.elementDiff.isEmptyObject({}, 'returns true for empty object'));
@@ -132,8 +157,10 @@
     test('#diffAttributes', function() {
       var diff, ed;
       ed = $('#test1 > a').elementDiff();
-      diff = ed.diffAttributes("<a href=\"#foo2\" data-foo=\"1\" data-foo-bar=\"2\" data-foo-bar-baz2=\"3\" foo=\"false\">Yay</a>");
-      return deepEqual(diff, ["attr({\"href\":\"#foo2\",\"data-foo-bar-baz\":null,\"data-foo-bar-baz2\":3,\"foo\":false})"], "returns attr method with diff");
+      diff = ed.diffAttributes('<a href="#foo2" data-foo="1" data-foo-bar="2" data-foo-bar-baz2="3" foo="false">Yay</a>');
+      deepEqual(diff, ['attr({"href":"#foo2","data-foo-bar-baz":null,"data-foo-bar-baz2":3,"foo":false})'], "returns attr method with diff");
+      diff = ed.diffAttributes('<a>Yay</a>');
+      return deepEqual(diff, ['attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null})']);
     });
     test('#diffText', function() {
       var diff, ed;
@@ -150,16 +177,62 @@
       ok(ed.isSameTag('<a href="#foo">Yay</a>'), 'returns true for same tag');
       return ok(!ed.isSameTag('<b>Yay</b>'), 'returns true for different tag');
     });
-    test('#getDiff', function() {
+    test('#diff', function() {
       var ed;
       ed = $('#test1 > a').elementDiff();
-      deepEqual(ed.getDiff('<a href="#foo">Yay</a>'), ['$("#test1 > a").attr({"data":null,"foo":null})']);
-      deepEqual(ed.getDiff('<b>Hoo</b>'), ['$("#test1 > a").replaceWith("<b>Hoo</b>")']);
+      deepEqual(ed.diff('<a href="#foo">Yay</a>'), ['$("#test1 > a").attr({"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null})']);
+      deepEqual(ed.diff('<b>Hoo</b>'), ['$("#test1 > a").replaceWith("<b>Hoo</b>")']);
       ed = $('#test1').elementDiff();
-      return deepEqual(ed.getDiff('<div>Hoo</div>'), ['$("#test1").attr({"id":null}).empty().text("Hoo")']);
+      return deepEqual(ed.diff('<div>Hoo</div>'), ['$("#test1").attr({"id":null}).empty().text("Hoo")']);
     });
     return test('#getDiffRecursive', function() {
-      return ok(1);
+      var clone, diff, ed;
+      ed = $('#test1 > a').elementDiff();
+      diff = ed.diffRecursive('<b>Yay</b>');
+      deepEqual(diff, ['$("#test1 > a").replaceWith("<b>Yay</b>")']);
+      evalScript(diff);
+      equal($.trim($("#test1").html()), '<b>Yay</b>', 'replaces with bold tag');
+      rollbackFixture();
+      diff = ed.diffRecursive('<a>Foo</a>');
+      deepEqual(diff, ['$("#test1 > a").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).text("Foo")']);
+      evalScript(diff);
+      equal($.trim($("#test1").html()), '<a>Foo</a>', 'updates text and attributes');
+      rollbackFixture();
+      ed = $('#test1').elementDiff();
+      diff = ed.diffRecursive('<div id="test1-1"><a href="http://www.google.com/" data-bar="foo" foo="1">Hoo</a><b>Baa</b></div>');
+      deepEqual(diff, ['$("#test1 > :eq(0)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).text("Hoo")', '$("#test1").append("<b>Baa</b>")', '$("#test1").attr({"id":"test1-1"})']);
+      evalScript(diff);
+      equal(outerHTML($("#test1-1")), '<div id="test1-1"><a href="http://www.google.com/" foo="1" data-bar="foo">Hoo</a><b>Baa</b></div>');
+      rollbackFixture();
+      diff = ed.diffRecursive('<div id="test1-2">aa</div>');
+      deepEqual(diff, ['$("#test1").attr({"id":"test1-2"}).empty().text("aa")']);
+      evalScript(diff);
+      equal(outerHTML($("#test1-2")), '<div id="test1-2">aa</div>');
+      rollbackFixture();
+      ed = $('#test-list1').elementDiff();
+      clone = $("#test-list2").clone();
+      clone.attr("id", "test-list2-2");
+      diff = ed.diffRecursive(clone);
+      deepEqual(diff, ['$("#test-list1 > :eq(0) > :eq(0)").attr({"class":"item1"})', '$("#test-list1 > :eq(0) > :eq(2) > :eq(0)").attr({"href":"http://www.yahoo.com/?foo"}).text("Yahoo!!")', '$("#test-list1 > :eq(0)").attr({"class":"list2"})', '$("#test-list1").attr({"id":"test-list2-2"})'], 'diff with test-list2');
+      evalScript(diff);
+      equal(outerHTML($("#test-list2-2")), outerHTML(clone));
+      rollbackFixture();
+      ed = $('#test-list1').elementDiff();
+      clone = $("#test-list3").clone();
+      clone.attr("id", "test-list3-2");
+      diff = ed.diffRecursive(outerHTML(clone));
+      deepEqual(diff, ['$("#test-list1 > :eq(0) > :eq(0)").attr({"class":"item1"})', '$("#test-list1 > :eq(0) > :eq(3)").remove()', '$("#test-list1 > :eq(0) > :eq(2)").remove()', '$("#test-list1").attr({"id":"test-list3-2"})'], 'diff with test-list3');
+      evalScript(diff);
+      equal(outerHTML($("#test-list3-2")), outerHTML(clone));
+      rollbackFixture();
+      ed = $('#test-list1').elementDiff();
+      clone = $("#test-list4").clone();
+      clone.attr("id", "test-list4-2");
+      diff = ed.diffRecursive(outerHTML(clone));
+      deepEqual(diff, ['$("#test-list1 > :eq(0)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")', '$("#test-list1").attr({"id":"test-list4-2"})'], 'diff with test-list4');
+      evalScript(diff);
+      equal(outerHTML($("#test-list4-2")), outerHTML(clone));
+      return rollbackFixture();
     });
   })(jQuery);
 
