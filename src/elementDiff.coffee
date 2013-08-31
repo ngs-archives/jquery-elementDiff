@@ -64,9 +64,16 @@
     getDiff: (element2)->
       return unless element2 && element2.size()
 
-    diffAttributes: (element2, selector)->
+    generateCode: (method, args = [], selector)->
       if typeof selector is 'undefined'
         selector = @element.selector
+      strArguments = map(args, (a)->
+        JSON.stringify a).join(',')
+      code = "#{method}(#{strArguments})"
+      if selector then """$("#{selector}").#{code}"""
+      else code
+
+    diffAttributes: (element2, selector)->
       element2 = $ element2
       attrs1 = @element.attr()
       attrs2 = element2.attr()
@@ -74,9 +81,7 @@
       for key, value of diff
         diff[key] = null if value == undefined
       unless isEmptyObject diff
-        code = "attr(#{JSON.stringify(diff)})"
-        if selector then """$("#{selector}").#{code}"""
-        else code
+        @generateCode 'attr', [diff], selector
       else
         null
 

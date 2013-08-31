@@ -63,6 +63,12 @@
         'b-d-h': '6'
       }, 'generates object with attribute naming rule'
 
+  test '@generateCode', ->
+    ed = $('#test1 > a').elementDiff()
+    equal ed.generateCode('foo'), '$("#test1 > a").foo()', 'generates code with no arguments'
+    equal ed.generateCode('foo', [], '#foo'), '$("#foo").foo()', 'generates code with selector'
+    equal ed.generateCode('foo', [1, '2', false, true]), '$("#test1 > a").foo(1,"2",false,true)', 'generates code with arguments'
+
   test '@diffAttributes', ->
     ed = $('#test1 > a').elementDiff()
     diff = ed.diffAttributes """<a href="#foo2" data-foo="1" data-foo-bar="2" data-foo-bar-baz2="3" foo="false">Yay</a>"""

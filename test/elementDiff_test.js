@@ -116,6 +116,13 @@
         'b-d-h': '6'
       }, 'generates object with attribute naming rule');
     });
+    test('@generateCode', function() {
+      var ed;
+      ed = $('#test1 > a').elementDiff();
+      equal(ed.generateCode('foo'), '$("#test1 > a").foo()', 'generates code with no arguments');
+      equal(ed.generateCode('foo', [], '#foo'), '$("#foo").foo()', 'generates code with selector');
+      return equal(ed.generateCode('foo', [1, '2', false, true]), '$("#test1 > a").foo(1,"2",false,true)', 'generates code with arguments');
+    });
     return test('@diffAttributes', function() {
       var diff, ed;
       ed = $('#test1 > a').elementDiff();

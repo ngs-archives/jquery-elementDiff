@@ -95,11 +95,27 @@
         }
       };
 
-      ElementDiff.prototype.diffAttributes = function(element2, selector) {
-        var attrs1, attrs2, code, diff, key, value;
+      ElementDiff.prototype.generateCode = function(method, args, selector) {
+        var code, strArguments;
+        if (args == null) {
+          args = [];
+        }
         if (typeof selector === 'undefined') {
           selector = this.element.selector;
         }
+        strArguments = map(args, function(a) {
+          return JSON.stringify(a);
+        }).join(',');
+        code = "" + method + "(" + strArguments + ")";
+        if (selector) {
+          return "$(\"" + selector + "\")." + code;
+        } else {
+          return code;
+        }
+      };
+
+      ElementDiff.prototype.diffAttributes = function(element2, selector) {
+        var attrs1, attrs2, diff, key, value;
         element2 = $(element2);
         attrs1 = this.element.attr();
         attrs2 = element2.attr();
@@ -111,12 +127,7 @@
           }
         }
         if (!isEmptyObject(diff)) {
-          code = "attr(" + (JSON.stringify(diff)) + ")";
-          if (selector) {
-            return "$(\"" + selector + "\")." + code;
-          } else {
-            return code;
-          }
+          return this.generateCode('attr', [diff], selector);
         } else {
           return null;
         }
