@@ -65,9 +65,18 @@
 
   test '@generateCode', ->
     ed = $('#test1 > a').elementDiff()
-    equal ed.generateCode('foo'), '$("#test1 > a").foo()', 'generates code with no arguments'
-    equal ed.generateCode('foo', [], '#foo'), '$("#foo").foo()', 'generates code with selector'
-    equal ed.generateCode('foo', [1, '2', false, true]), '$("#test1 > a").foo(1,"2",false,true)', 'generates code with arguments'
+    equal ed.generateCode('foo'),
+      '$("#test1 > a").foo()', 'generates code with no arguments'
+    equal ed.generateCode('foo', [], '#bar'),
+      '$("#bar").foo()', 'generates code with selector'
+    equal ed.generateCode('foo', [], null),
+      'foo()', 'generates code without selector'
+    equal ed.generateCode('foo', [1, '2', false, true]),
+      '$("#test1 > a").foo(1,"2",false,true)', 'generates code with arguments'
+    equal ed.generateCode('foo', [1, '2', false, true], null),
+      'foo(1,"2",false,true)', 'generates code without selector'
+    equal ed.generateCode('foo', [1, '2', false, true], '#bar'),
+      '$("#bar").foo(1,"2",false,true)', 'generates code with selector'
 
   test '@diffAttributes', ->
     ed = $('#test1 > a').elementDiff()
