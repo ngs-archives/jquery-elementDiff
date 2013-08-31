@@ -55,25 +55,24 @@
     attrs2
 
   class ElementDiff
-    constructor:        (element)-> @element = element
-    toString:           -> "[ElementDiff: #{@element[0]}]"
+    constructor: (element, selector)->
+      if typeof selector is 'undefined'
+        selector = element.selector
+      @element  = element
+      @selector = selector
+
+    toString:           -> "[ElementDiff: #{@selector || @element[0]}]"
     @diffObjects:       diffObjects
     @isEmptyObject:     isEmptyObject
     @flattenAttributes: flattenAttributes
 
-    getDiff: (element2)->
-      return unless element2 && element2.size()
-
-    generateCode: (method, args = [], selector)->
-      if typeof selector is 'undefined'
-        selector = @element.selector
-      strArguments = map(args, (a)->
-        JSON.stringify a).join(',')
+    generateCode: (method, args = [])->
+      strArguments = map(args, (a)-> JSON.stringify a).join(',')
       code = "#{method}(#{strArguments})"
-      if selector then """$("#{selector}").#{code}"""
+      if @selector then """$("#{@selector}").#{code}"""
       else code
 
-    diffAttributes: (element2, selector)->
+    diffAttributes: (element2)->
       element2 = $ element2
       attrs1 = @element.attr()
       attrs2 = element2.attr()
@@ -81,16 +80,25 @@
       for key, value of diff
         diff[key] = null if value == undefined
       unless isEmptyObject diff
-        @generateCode 'attr', [diff], selector
+        @generateCode 'attr', [diff]
       else
         null
 
+    isSameTag: (element2)->
+      @element.prop('nodeName') is $(element2).prop('nodeName')
+
+    getDiff: (element2)->
+      element2 = $ element2
+      return unless element2 && element2.size()
+      # if @sameTag element2
+
   $.elementDiff = ElementDiff
 
-  $.fn.elementDiff = -> new ElementDiff @
+  $.fn.elementDiff = (selector)->
+    new ElementDiff @, selector
 
-  $.fn.getElementDiff = (element2)->
-    @elementDiff().getDiff(element2)
+  $.fn.getElementDiff = (element2, selector)->
+    @elementDiff(selector).getDiff(element2)
 
   @
 ) jQuery

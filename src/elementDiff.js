@@ -75,12 +75,16 @@
     };
     ElementDiff = (function() {
 
-      function ElementDiff(element) {
+      function ElementDiff(element, selector) {
+        if (typeof selector === 'undefined') {
+          selector = element.selector;
+        }
         this.element = element;
+        this.selector = selector;
       }
 
       ElementDiff.prototype.toString = function() {
-        return "[ElementDiff: " + this.element[0] + "]";
+        return "[ElementDiff: " + (this.selector || this.element[0]) + "]";
       };
 
       ElementDiff.diffObjects = diffObjects;
@@ -89,32 +93,23 @@
 
       ElementDiff.flattenAttributes = flattenAttributes;
 
-      ElementDiff.prototype.getDiff = function(element2) {
-        if (!(element2 && element2.size())) {
-
-        }
-      };
-
-      ElementDiff.prototype.generateCode = function(method, args, selector) {
+      ElementDiff.prototype.generateCode = function(method, args) {
         var code, strArguments;
         if (args == null) {
           args = [];
-        }
-        if (typeof selector === 'undefined') {
-          selector = this.element.selector;
         }
         strArguments = map(args, function(a) {
           return JSON.stringify(a);
         }).join(',');
         code = "" + method + "(" + strArguments + ")";
-        if (selector) {
-          return "$(\"" + selector + "\")." + code;
+        if (this.selector) {
+          return "$(\"" + this.selector + "\")." + code;
         } else {
           return code;
         }
       };
 
-      ElementDiff.prototype.diffAttributes = function(element2, selector) {
+      ElementDiff.prototype.diffAttributes = function(element2) {
         var attrs1, attrs2, diff, key, value;
         element2 = $(element2);
         attrs1 = this.element.attr();
@@ -127,9 +122,20 @@
           }
         }
         if (!isEmptyObject(diff)) {
-          return this.generateCode('attr', [diff], selector);
+          return this.generateCode('attr', [diff]);
         } else {
           return null;
+        }
+      };
+
+      ElementDiff.prototype.isSameTag = function(element2) {
+        return this.element.prop('nodeName') === $(element2).prop('nodeName');
+      };
+
+      ElementDiff.prototype.getDiff = function(element2) {
+        element2 = $(element2);
+        if (!(element2 && element2.size())) {
+
         }
       };
 
@@ -137,11 +143,11 @@
 
     })();
     $.elementDiff = ElementDiff;
-    $.fn.elementDiff = function() {
-      return new ElementDiff(this);
+    $.fn.elementDiff = function(selector) {
+      return new ElementDiff(this, selector);
     };
-    $.fn.getElementDiff = function(element2) {
-      return this.elementDiff().getDiff(element2);
+    $.fn.getElementDiff = function(element2, selector) {
+      return this.elementDiff(selector).getDiff(element2);
     };
     return this;
   })(jQuery);

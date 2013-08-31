@@ -116,21 +116,29 @@
         'b-d-h': '6'
       }, 'generates object with attribute naming rule');
     });
-    test('@generateCode', function() {
+    test('#generateCode', function() {
       var ed;
       ed = $('#test1 > a').elementDiff();
       equal(ed.generateCode('foo'), '$("#test1 > a").foo()', 'generates code with no arguments');
-      equal(ed.generateCode('foo', [], '#bar'), '$("#bar").foo()', 'generates code with selector');
-      equal(ed.generateCode('foo', [], null), 'foo()', 'generates code without selector');
       equal(ed.generateCode('foo', [1, '2', false, true]), '$("#test1 > a").foo(1,"2",false,true)', 'generates code with arguments');
-      equal(ed.generateCode('foo', [1, '2', false, true], null), 'foo(1,"2",false,true)', 'generates code without selector');
-      return equal(ed.generateCode('foo', [1, '2', false, true], '#bar'), '$("#bar").foo(1,"2",false,true)', 'generates code with selector');
+      ed = $('#test1 > a').elementDiff('#bar');
+      equal(ed.generateCode('foo', []), '$("#bar").foo()', 'generates code with selector');
+      equal(ed.generateCode('foo', [1, '2', false, true]), '$("#bar").foo(1,"2",false,true)', 'generates code with selector');
+      ed = $('#test1 > a').elementDiff(null);
+      equal(ed.generateCode('foo', []), 'foo()', 'generates code without selector');
+      return equal(ed.generateCode('foo', [1, '2', false, true]), 'foo(1,"2",false,true)', 'generates code without selector');
     });
-    return test('@diffAttributes', function() {
+    test('#diffAttributes', function() {
       var diff, ed;
       ed = $('#test1 > a').elementDiff();
       diff = ed.diffAttributes("<a href=\"#foo2\" data-foo=\"1\" data-foo-bar=\"2\" data-foo-bar-baz2=\"3\" foo=\"false\">Yay</a>");
       return equal(diff, "$(\"#test1 > a\").attr({\"href\":\"#foo2\",\"data-foo-bar-baz\":null,\"data-foo-bar-baz2\":3,\"foo\":false})", "returns attr method with diff");
+    });
+    return test('#isSameTag', function() {
+      var ed;
+      ed = $('#test1 > a').elementDiff();
+      ok(ed.isSameTag('<a href="#foo">Yay</a>'), 'returns true for same tag');
+      return ok(!ed.isSameTag('<b>Yay</b>'), 'returns true for different tag');
     });
   })(jQuery);
 
