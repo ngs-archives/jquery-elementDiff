@@ -46,9 +46,6 @@ module.exports = (grunt)->
       coffee:
         files: ['src/<%= pkg.name %>.coffee', 'test/<%= pkg.name %>_test.coffee']
         tasks: ['coffee']
-      gruntfile:
-        files: '<%= jshint.gruntfile.src %>'
-        tasks: ['jshint:gruntfile']
       src:
         files: '<%= jshint.src.src %>'
         tasks: ['jshint:src', 'qunit']
