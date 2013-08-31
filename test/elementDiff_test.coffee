@@ -31,16 +31,43 @@
       { a: '1' }, 'returns diff with different types'
     deepEqual $.elementDiff.diffObjects({ a: 1 }, { a: true }),
       { a: true }, 'returns diff with different types'
+    deepEqual $.elementDiff.diffObjects({ a: 1 }, { a: null }),
+      { a: null }, 'returns diff when property changed to be null'
+    deepEqual $.elementDiff.diffObjects({ a: 1 }, {}),
+      { a: undefined }, 'returns diff when property set property null'
     deepEqual $.elementDiff.diffObjects({ a: 1 }, { a: 1, b: 2 }),
       { b: 2 }, 'returns diff with new property'
     deepEqual $.elementDiff.diffObjects({ a: 1, b: { c: 1 } }, { a: 1, b: { c: 2 } }),
       { b: { c: 2 } }, ''
 
+  test ':flattenAttributes', ->
+    deepEqual $.elementDiff.flattenAttributes(
+        a: 1
+        b:
+          _: 2
+          c: 3
+          d:
+            _: 4
+            e: 5
+            f: null
+            g: false
+            h: '6'),
+      {
+        'a':     1
+        'b':     2
+        'b-c':   3
+        'b-d':   4
+        'b-d-e': 5
+        'b-d-f': null
+        'b-d-g': false
+        'b-d-h': '6'
+      }, 'generates object with attribute naming rule'
+
   test '@diffAttributes', ->
     ed = $('#test1 > a').elementDiff()
-    diff = ed.diffAttributes("""<a href="#foo2" data-foo="1" data-foo-bar="2" data-foo-bar-baz2="3" foo="false">Yay</a>""")
-    console.log JSON.stringify diff
-    ok 1
-
+    diff = ed.diffAttributes """<a href="#foo2" data-foo="1" data-foo-bar="2" data-foo-bar-baz2="3" foo="false">Yay</a>"""
+    equal diff,
+      """$("#test1 > a").attr({"href":"#foo2","data-foo-bar-baz":null,"data-foo-bar-baz2":3,"foo":false})""",
+      "returns attr method with diff"
 
 ) jQuery

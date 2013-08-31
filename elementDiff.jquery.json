@@ -21,7 +21,8 @@
     }
   ],
   "dependencies": {
-    "jquery": "*"
+    "jquery": "*",
+    "jquery-allAttributes": "*"
   },
   "keywords": []
 }

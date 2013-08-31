@@ -58,6 +58,18 @@
       deepEqual($.elementDiff.diffObjects({
         a: 1
       }, {
+        a: null
+      }), {
+        a: null
+      }, 'returns diff when property changed to be null');
+      deepEqual($.elementDiff.diffObjects({
+        a: 1
+      }, {}), {
+        a: void 0
+      }, 'returns diff when property set property null');
+      deepEqual($.elementDiff.diffObjects({
+        a: 1
+      }, {
         a: 1,
         b: 2
       }), {
@@ -79,12 +91,36 @@
         }
       }, '');
     });
+    test(':flattenAttributes', function() {
+      return deepEqual($.elementDiff.flattenAttributes({
+        a: 1,
+        b: {
+          _: 2,
+          c: 3,
+          d: {
+            _: 4,
+            e: 5,
+            f: null,
+            g: false,
+            h: '6'
+          }
+        }
+      }), {
+        'a': 1,
+        'b': 2,
+        'b-c': 3,
+        'b-d': 4,
+        'b-d-e': 5,
+        'b-d-f': null,
+        'b-d-g': false,
+        'b-d-h': '6'
+      }, 'generates object with attribute naming rule');
+    });
     return test('@diffAttributes', function() {
       var diff, ed;
       ed = $('#test1 > a').elementDiff();
       diff = ed.diffAttributes("<a href=\"#foo2\" data-foo=\"1\" data-foo-bar=\"2\" data-foo-bar-baz2=\"3\" foo=\"false\">Yay</a>");
-      console.log(JSON.stringify(diff));
-      return ok(1);
+      return equal(diff, "$(\"#test1 > a\").attr({\"href\":\"#foo2\",\"data-foo-bar-baz\":null,\"data-foo-bar-baz2\":3,\"foo\":false})", "returns attr method with diff");
     });
   })(jQuery);
 

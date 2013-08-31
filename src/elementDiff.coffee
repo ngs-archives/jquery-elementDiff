@@ -6,40 +6,12 @@
 # Licensed under the MIT license.
 #
 (($) ->
+  "use strict"
 
-  console = window.console
+  # console = window.console
   map     = $.map
   extend  = $.extend
   inArray = $.inArray
-
-  #----------------------------------------------
-  # jquery-allAttributes plugin 0.1.0
-  #----------------------------------------------
-
-  getAttributes = (element)->
-    attrs = element.attributes
-    hash = {}
-    for attr in attrs
-      names = attr.name.split '-'
-      value = attr.value
-      ref = hash
-      if /^(\d[\d\.]*)$/.test value
-        value = parseFloat(value)
-      else if /^(true|false)$/.test value
-        value = value is 'true'
-      while names.length > 1
-        name = names.shift()
-        ref[name] = '_': ref[name] if /^(number|string|boolean)$/.test typeof ref[name]
-        ref[name] = {} unless ref[name]
-        ref = ref[name]
-      name = names[0]
-      if typeof ref[name] is 'object'
-        ref[name]['_'] = value
-      else
-        ref[name] = value
-    hash
-
-  #----------------------------------------------
 
   duplicate = (object)->
     extend {}, object
@@ -50,6 +22,10 @@
       return no if Object.prototype.hasOwnProperty.call(obj, key)
     yes
 
+  VALUE_REGEX = /^(string|number|boolean)$/
+  isValue = (obj)->
+    !obj or VALUE_REGEX.test(typeof obj) or obj instanceof Array
+
   diffObjects = (obj1, obj2)->
     obj1 = duplicate obj1
     obj2 = duplicate obj2
@@ -57,7 +33,7 @@
     for key, value of obj1
       value2 = obj2[key]
       delete obj2[key]
-      if /^(string|number|boolean)$/.test(typeof value2) or value2 instanceof Array
+      if isValue value2
         diff[key] = value2 if value2 != value
       else if typeof value2 is 'object'
         obj = diffObjects value, value2
@@ -66,40 +42,50 @@
         diff[key] = null
     extend diff, obj2
 
-  class ElementDiff
-    constructor: (element)->
-      @element = element
+  flattenAttributes = (attrs, attrs2 = {}, prefix = null)->
+    for key, value of attrs
+      if key is '_'
+        key = prefix
+      else if prefix
+        key = "#{prefix}-#{key}"
+      if isValue value
+        attrs2[key] = value
+      else
+        flattenAttributes value, attrs2, key
+    attrs2
 
-    toString: -> "[ElementDiff: #{@element[0]}]"
+  class ElementDiff
+    constructor:        (element)-> @element = element
+    toString:           -> "[ElementDiff: #{@element[0]}]"
+    @diffObjects:       diffObjects
+    @isEmptyObject:     isEmptyObject
+    @flattenAttributes: flattenAttributes
 
     getDiff: (element2)->
       return unless element2 && element2.size()
 
-    diffAttributes: (element2)->
+    diffAttributes: (element2, selector)->
+      if typeof selector is 'undefined'
+        selector = @element.selector
       element2 = $ element2
       attrs1 = @element.attr()
       attrs2 = element2.attr()
-      diffObjects attrs1, attrs2
+      diff = flattenAttributes diffObjects(attrs1, attrs2)
+      for key, value of diff
+        diff[key] = null if value == undefined
+      unless isEmptyObject diff
+        code = "attr(#{JSON.stringify(diff)})"
+        if selector then """$("#{selector}").#{code}"""
+        else code
+      else
+        null
 
-
-
-  #----------------------------------------------
-
-  $.elementDiff =
-    diffObjects: diffObjects
-    isEmptyObject: isEmptyObject
+  $.elementDiff = ElementDiff
 
   $.fn.elementDiff = -> new ElementDiff @
 
   $.fn.getElementDiff = (element2)->
     @elementDiff().getDiff(element2)
-
-  _attr = $.fn.attr
-  $.fn.attr =->
-    if arguments.length
-      _attr.apply @, arguments
-    else if @[0]
-      getAttributes @[0]
 
   @
 ) jQuery

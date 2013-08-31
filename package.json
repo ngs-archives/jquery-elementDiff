@@ -1,5 +1,5 @@
 {
-  "name": "jquery-elementDiff",
+  "name": "jquery-element-diff",
   "title": "jQuery Element Diff",
   "version": "0.1.0",
   "author": "Atsushi Nagase <a@ngs.io> (http://ngs.io)",
@@ -27,7 +27,8 @@
     "grunt": "~0.4.1"
   },
   "dependencies": {
-    "jquery": ">=1.8.0"
+    "jquery": ">=1.8.0",
+    "jquery-all-attributes": "~0.1.0"
   },
   "bugs": "https://github.com/ngs/jquery-elementDiff/issues",
   "licenses": [
