@@ -119,20 +119,30 @@
     test('#generateCode', function() {
       var ed;
       ed = $('#test1 > a').elementDiff();
-      equal(ed.generateCode('foo'), '$("#test1 > a").foo()', 'generates code with no arguments');
-      equal(ed.generateCode('foo', [1, '2', false, true]), '$("#test1 > a").foo(1,"2",false,true)', 'generates code with arguments');
-      ed = $('#test1 > a').elementDiff('#bar');
-      equal(ed.generateCode('foo', []), '$("#bar").foo()', 'generates code with selector');
-      equal(ed.generateCode('foo', [1, '2', false, true]), '$("#bar").foo(1,"2",false,true)', 'generates code with selector');
-      ed = $('#test1 > a').elementDiff(null);
-      equal(ed.generateCode('foo', []), 'foo()', 'generates code without selector');
-      return equal(ed.generateCode('foo', [1, '2', false, true]), 'foo(1,"2",false,true)', 'generates code without selector');
+      equal(ed.generateCode('foo'), 'foo()', 'generates code with no arguments');
+      equal(ed.generateCode('foo', 1, '2', null, false, true), 'foo(1,"2",null,false,true)', 'generates code with arguments');
+      return equal(ed.generateCode('foo', NaN, {
+        a: function() {
+          return 1;
+        }
+      }, function() {
+        return 2;
+      }), 'foo(null,{})', 'should ignore functions');
     });
     test('#diffAttributes', function() {
       var diff, ed;
       ed = $('#test1 > a').elementDiff();
       diff = ed.diffAttributes("<a href=\"#foo2\" data-foo=\"1\" data-foo-bar=\"2\" data-foo-bar-baz2=\"3\" foo=\"false\">Yay</a>");
-      return equal(diff, "$(\"#test1 > a\").attr({\"href\":\"#foo2\",\"data-foo-bar-baz\":null,\"data-foo-bar-baz2\":3,\"foo\":false})", "returns attr method with diff");
+      return deepEqual(diff, ["attr({\"href\":\"#foo2\",\"data-foo-bar-baz\":null,\"data-foo-bar-baz2\":3,\"foo\":false})"], "returns attr method with diff");
+    });
+    test('#diffText', function() {
+      var diff, ed;
+      ed = $('#test1 > a').elementDiff();
+      diff = ed.diffText('<a>Hoo</a>');
+      deepEqual(diff, ['text("Hoo")']);
+      ed = $('#test1').elementDiff();
+      diff = ed.diffText('<div>Hoo</div>');
+      return deepEqual(diff, ['empty()', 'text("Hoo")']);
     });
     test('#isSameTag', function() {
       var ed;
@@ -140,11 +150,16 @@
       ok(ed.isSameTag('<a href="#foo">Yay</a>'), 'returns true for same tag');
       return ok(!ed.isSameTag('<b>Yay</b>'), 'returns true for different tag');
     });
-    return test('#getDiff', function() {
+    test('#getDiff', function() {
       var ed;
       ed = $('#test1 > a').elementDiff();
       deepEqual(ed.getDiff('<a href="#foo">Yay</a>'), ['$("#test1 > a").attr({"data":null,"foo":null})']);
-      return deepEqual(ed.getDiff('<b>Hoo</b>'), ['$("#test1 > a").replaceWith("<b>Hoo</b>")']);
+      deepEqual(ed.getDiff('<b>Hoo</b>'), ['$("#test1 > a").replaceWith("<b>Hoo</b>")']);
+      ed = $('#test1').elementDiff();
+      return deepEqual(ed.getDiff('<div>Hoo</div>'), ['$("#test1").attr({"id":null}).empty().text("Hoo")']);
+    });
+    return test('#getDiffRecursive', function() {
+      return ok(1);
     });
   })(jQuery);
 

@@ -12,6 +12,7 @@
   map     = $.map
   extend  = $.extend
   inArray = $.inArray
+  merge   = $.merge
 
   duplicate = (object)->
     extend {}, object
@@ -66,11 +67,10 @@
     @isEmptyObject:     isEmptyObject
     @flattenAttributes: flattenAttributes
 
-    generateCode: (method, args = [])->
+    generateCode: (method)->
+      args = merge([], arguments)[1..]
       strArguments = map(args, (a)-> JSON.stringify a).join(',')
-      code = "#{method}(#{strArguments})"
-      if @selector then """$("#{@selector}").#{code}"""
-      else code
+      "#{method}(#{strArguments})"
 
     diffAttributes: (element2)->
       element2 = $ element2
@@ -80,25 +80,59 @@
       for key, value of diff
         diff[key] = null if value == undefined
       unless isEmptyObject diff
-        @generateCode 'attr', [diff]
+        [@generateCode 'attr', diff]
       else
-        null
+        []
+
+    diffText: (element2)->
+      element1 = @element
+      element2 = $ element2
+      children1 = element1.children()
+      children2 = element2.children()
+      size1 = children1.size()
+      size2 = children2.size()
+      text1 = element1.text()
+      text2 = element2.text()
+      codes = []
+      if size2 == 0 && text1 isnt text2
+        codes.push @generateCode 'empty' if size1 > 0
+        codes.push @generateCode 'text', text2
+        return codes
+      codes
 
     isSameTag: (element2)->
       @element.prop('nodeName') is $(element2).prop('nodeName')
 
     getDiff: (element2)->
+      element1 = @element
       element2 = $ element2
-      return unless element2 && element2.size()
-      unless @isSameTag element2
-        div = $('<div />').append(element2.clone())
-        return [@generateCode 'replaceWith', [div.html()]]
+      return [] unless element2 && element2.size()
       codes = []
-      code = @diffAttributes element2
-      codes.push code if code
+      if @isSameTag element2
+        merge codes, @diffAttributes(element2)
+        merge codes, @diffText(element2)
+      else
+        div = $('<div />').append(element2.clone())
+        codes.push @generateCode 'replaceWith', div.html()
+      if codes.length
+        code = codes.join('.')
+        if @selector then ["""$("#{@selector}").#{code}"""]
+        else [code]
+      else
+        []
 
+    getDiffRecursive: (element2)->
+      element1  = @element
+      element2  = $ element2
+      codes     = @getDiff(element2)
+      children1 = element1.children()
+      children2 = element2.children()
+      size1     = children1.size()
+      size2     = children2.size()
+      children2.each (index, element)->
+        console.log index, element
+      1
 
-      codes
 
   $.elementDiff = ElementDiff
 
