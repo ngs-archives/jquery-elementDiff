@@ -8,7 +8,7 @@
 (($) ->
   "use strict"
 
-  # console = window.console
+  console = window.console
   map     = $.map
   extend  = $.extend
   inArray = $.inArray
@@ -90,7 +90,15 @@
     getDiff: (element2)->
       element2 = $ element2
       return unless element2 && element2.size()
-      # if @sameTag element2
+      unless @isSameTag element2
+        div = $('<div />').append(element2.clone())
+        return [@generateCode 'replaceWith', [div.html()]]
+      codes = []
+      code = @diffAttributes element2
+      codes.push code if code
+
+
+      codes
 
   $.elementDiff = ElementDiff
 

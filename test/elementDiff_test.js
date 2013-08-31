@@ -134,11 +134,17 @@
       diff = ed.diffAttributes("<a href=\"#foo2\" data-foo=\"1\" data-foo-bar=\"2\" data-foo-bar-baz2=\"3\" foo=\"false\">Yay</a>");
       return equal(diff, "$(\"#test1 > a\").attr({\"href\":\"#foo2\",\"data-foo-bar-baz\":null,\"data-foo-bar-baz2\":3,\"foo\":false})", "returns attr method with diff");
     });
-    return test('#isSameTag', function() {
+    test('#isSameTag', function() {
       var ed;
       ed = $('#test1 > a').elementDiff();
       ok(ed.isSameTag('<a href="#foo">Yay</a>'), 'returns true for same tag');
       return ok(!ed.isSameTag('<b>Yay</b>'), 'returns true for different tag');
+    });
+    return test('#getDiff', function() {
+      var ed;
+      ed = $('#test1 > a').elementDiff();
+      deepEqual(ed.getDiff('<a href="#foo">Yay</a>'), ['$("#test1 > a").attr({"data":null,"foo":null})']);
+      return deepEqual(ed.getDiff('<b>Hoo</b>'), ['$("#test1 > a").replaceWith("<b>Hoo</b>")']);
     });
   })(jQuery);
 

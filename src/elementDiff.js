@@ -3,7 +3,8 @@
   (function($) {
     "use strict";
 
-    var ElementDiff, VALUE_REGEX, diffObjects, duplicate, extend, flattenAttributes, inArray, isEmptyObject, isValue, map;
+    var ElementDiff, VALUE_REGEX, console, diffObjects, duplicate, extend, flattenAttributes, inArray, isEmptyObject, isValue, map;
+    console = window.console;
     map = $.map;
     extend = $.extend;
     inArray = $.inArray;
@@ -133,10 +134,21 @@
       };
 
       ElementDiff.prototype.getDiff = function(element2) {
+        var code, codes, div;
         element2 = $(element2);
         if (!(element2 && element2.size())) {
-
+          return;
         }
+        if (!this.isSameTag(element2)) {
+          div = $('<div />').append(element2.clone());
+          return [this.generateCode('replaceWith', [div.html()])];
+        }
+        codes = [];
+        code = this.diffAttributes(element2);
+        if (code) {
+          codes.push(code);
+        }
+        return codes;
       };
 
       return ElementDiff;

@@ -92,4 +92,10 @@
     ok  ed.isSameTag('<a href="#foo">Yay</a>'), 'returns true for same tag'
     ok !ed.isSameTag('<b>Yay</b>'), 'returns true for different tag'
 
+  test '#getDiff', ->
+    ed = $('#test1 > a').elementDiff()
+    deepEqual ed.getDiff('<a href="#foo">Yay</a>'), ['$("#test1 > a").attr({"data":null,"foo":null})']
+    deepEqual ed.getDiff('<b>Hoo</b>'), ['$("#test1 > a").replaceWith("<b>Hoo</b>")']
+
+
 ) jQuery
