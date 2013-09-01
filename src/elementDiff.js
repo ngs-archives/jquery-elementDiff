@@ -3,11 +3,13 @@
   (function($) {
     "use strict";
 
-    var ElementDiff, VALUE_REGEX, diffObjects, duplicate, extend, flattenAttributes, inArray, isEmptyObject, isValue, map, merge, nullDeeply, outerHTML;
+    var ElementDiff, LF, VALUE_REGEX, diffObjects, duplicate, extend, flattenAttributes, fnSelector, getTextContents, hasTextNode, inArray, isEmptyObject, isValue, map, merge, nullDeeply, outerHTML, selectorChild, trim;
+    LF = "\n";
     map = $.map;
     extend = $.extend;
     inArray = $.inArray;
     merge = $.merge;
+    trim = $.trim;
     duplicate = function(object) {
       return extend({}, object);
     };
@@ -22,6 +24,24 @@
         }
       }
       return true;
+    };
+    getTextContents = function(obj) {
+      var nodes;
+      nodes = obj.contents().filter(function() {
+        return this.nodeType === 3 && trim(this.data);
+      }).get();
+      return map(nodes, function(node) {
+        return trim(node.data);
+      });
+    };
+    hasTextNode = function(obj) {
+      return getTextContents(obj).length > 0;
+    };
+    fnSelector = function(selector) {
+      return "$(\"" + selector + "\")";
+    };
+    selectorChild = function(selector, index) {
+      return "" + selector + " > :eq(" + index + ")";
     };
     VALUE_REGEX = /^(string|number|boolean|undefined)$/;
     isValue = function(obj) {
@@ -88,7 +108,7 @@
     outerHTML = function(element) {
       var div;
       div = $('<div />').append(element.clone());
-      return $.trim(div.html()).replace(/\s*\n\s*/g, '');
+      return trim(div.html()).replace(/>\s*\n\s*</g, '><');
     };
     ElementDiff = (function() {
 
@@ -108,11 +128,22 @@
 
       ElementDiff.flattenAttributes = flattenAttributes;
 
+      ElementDiff.getTextContents = getTextContents;
+
+      ElementDiff.hasTextNode = hasTextNode;
+
       ElementDiff.isEmptyObject = isEmptyObject;
 
       ElementDiff.nullDeeply = nullDeeply;
 
       ElementDiff.outerHTML = outerHTML;
+
+      ElementDiff.prototype.hasTextDiff = function(element2) {
+        var text1, text2;
+        text1 = getTextContents($(this.element));
+        text2 = getTextContents($(element2));
+        return text1.join(LF) !== text2.join(LF);
+      };
 
       ElementDiff.prototype.generateCode = function(method) {
         var args, strArguments;
@@ -143,28 +174,27 @@
       };
 
       ElementDiff.prototype.diffText = function(element2) {
-        var children1, children2, codes, element1, size1, size2, text1, text2;
+        var children1, children2, codes, element1, html1, html2, size1, size2;
         element1 = this.element;
         element2 = $(element2);
         children1 = element1.children();
         children2 = element2.children();
         size1 = children1.size();
         size2 = children2.size();
-        text1 = element1.text();
-        text2 = element2.text();
+        html1 = element1.html();
+        html2 = element2.html();
         codes = [];
-        if (size2 === 0 && text1 !== text2) {
-          if (size1 > 0) {
-            codes.push(this.generateCode('empty'));
-          }
-          codes.push(this.generateCode('text', text2));
+        if (this.hasTextDiff(element2)) {
+          codes.push(this.generateCode('html', html2));
           return codes;
         }
         return codes;
       };
 
       ElementDiff.prototype.isSameTag = function(element2) {
-        return this.element.prop('nodeName') === $(element2).prop('nodeName');
+        var NODE_NAME;
+        NODE_NAME = 'nodeName';
+        return this.element.prop(NODE_NAME) === $(element2).prop(NODE_NAME);
       };
 
       ElementDiff.prototype.diff = function(element2) {
@@ -184,7 +214,7 @@
         if (codes.length) {
           code = codes.join('.');
           if (this.selector) {
-            return ["$(\"" + this.selector + "\")." + code];
+            return ["" + (fnSelector(this.selector)) + "." + code];
           } else {
             return [code];
           }
@@ -199,7 +229,7 @@
         element1 = self.element;
         element2 = $(element2);
         myDiff = self.diff(element2);
-        if (/\.(empty|replaceWith)\(/.test(myDiff[0])) {
+        if (/\.(empty|replaceWith|html)\(/.test(myDiff[0])) {
           return myDiff;
         }
         codes = [];
@@ -209,19 +239,18 @@
         size1 = children1.size();
         size2 = children2.size();
         children2.each(function(index) {
-          var child1, child2, childSelector;
+          var child1, child2;
           child1 = $(children1[index]);
           child2 = $(children2[index]);
-          childSelector = "" + selector + " > :eq(" + index + ")";
           if (child1.size()) {
-            return merge(codes, new ElementDiff(child1, childSelector).diffRecursive(child2));
+            return merge(codes, new ElementDiff(child1, selectorChild(selector, index)).diffRecursive(child2));
           } else {
-            return codes.push("$(\"" + selector + "\")." + (self.generateCode('append', outerHTML(child2))));
+            return codes.push("" + (fnSelector(selector)) + "." + (self.generateCode('append', outerHTML(child2))));
           }
         });
         index = size1;
         while (index > size2) {
-          codes.push("$(\"" + selector + " > :eq(" + (--index) + ")\")." + (self.generateCode('remove')));
+          codes.push("" + (fnSelector(selectorChild(selector, --index))) + "." + (self.generateCode('remove')));
         }
         merge(codes, myDiff);
         return codes;
@@ -231,12 +260,14 @@
 
     })();
     $.elementDiff = ElementDiff;
-    $.fn.elementDiff = function(selector) {
-      return new ElementDiff(this, selector);
-    };
-    $.fn.getElementDiff = function(element2, selector) {
-      return this.elementDiff(selector).diffRecursive(element2);
-    };
+    extend($.fn, {
+      elementDiff: function(selector) {
+        return new ElementDiff(this, selector);
+      },
+      getElementDiff: function(element2, selector) {
+        return this.elementDiff(selector).diffRecursive(element2);
+      }
+    });
     return this;
   })(jQuery);
 

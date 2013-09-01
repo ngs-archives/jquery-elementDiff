@@ -8,11 +8,14 @@
 (($) ->
   "use strict"
 
+  LF = "\n"
+
   # console = window.console
   map     = $.map
   extend  = $.extend
   inArray = $.inArray
   merge   = $.merge
+  trim    = $.trim
 
   duplicate = (object)->
     extend {}, object
@@ -22,6 +25,21 @@
     for key of obj
       return no if Object.prototype.hasOwnProperty.call(obj, key)
     yes
+
+  getTextContents = (obj)->
+    nodes = obj.contents()
+      .filter( -> @nodeType == 3 && trim @data )
+      .get()
+    map nodes, (node)-> trim node.data
+
+  hasTextNode = (obj)->
+    getTextContents(obj).length > 0
+
+  fnSelector = (selector)->
+    """$("#{selector}")"""
+
+  selectorChild = (selector, index)->
+    "#{selector} > :eq(#{index})"
 
   VALUE_REGEX = /^(string|number|boolean|undefined)$/
   isValue = (obj)->
@@ -63,7 +81,7 @@
 
   outerHTML = (element)->
     div = $('<div />').append(element.clone())
-    $.trim(div.html()).replace(/\s*\n\s*/g, '')
+    trim(div.html()).replace(/>\s*\n\s*</g, '><')
 
   class ElementDiff
     constructor: (element, selector)->
@@ -76,9 +94,16 @@
 
     @diffObjects:       diffObjects
     @flattenAttributes: flattenAttributes
+    @getTextContents:   getTextContents
+    @hasTextNode:       hasTextNode
     @isEmptyObject:     isEmptyObject
     @nullDeeply:        nullDeeply
     @outerHTML:         outerHTML
+
+    hasTextDiff: (element2)->
+      text1 = getTextContents $(@element)
+      text2 = getTextContents $(element2)
+      text1.join(LF) isnt text2.join(LF)
 
     generateCode: (method)->
       args = merge([], arguments)[1..]
@@ -104,17 +129,17 @@
       children2 = element2.children()
       size1 = children1.size()
       size2 = children2.size()
-      text1 = element1.text()
-      text2 = element2.text()
+      html1 = element1.html()
+      html2 = element2.html()
       codes = []
-      if size2 == 0 && text1 isnt text2
-        codes.push @generateCode 'empty' if size1 > 0
-        codes.push @generateCode 'text', text2
+      if @hasTextDiff(element2)
+        codes.push @generateCode 'html', html2
         return codes
       codes
 
     isSameTag: (element2)->
-      @element.prop('nodeName') is $(element2).prop('nodeName')
+      NODE_NAME = 'nodeName'
+      @element.prop(NODE_NAME) is $(element2).prop(NODE_NAME)
 
     diff: (element2)->
       element1 = @element
@@ -128,7 +153,7 @@
         codes.push @generateCode 'replaceWith', outerHTML(element2)
       if codes.length
         code = codes.join('.')
-        if @selector then ["""$("#{@selector}").#{code}"""]
+        if @selector then ["#{fnSelector @selector}.#{code}"]
         else [code]
       else
         []
@@ -138,7 +163,7 @@
       element1  = self.element
       element2  = $ element2
       myDiff    = self.diff element2
-      return myDiff if /\.(empty|replaceWith)\(/.test myDiff[0]
+      return myDiff if /\.(empty|replaceWith|html)\(/.test myDiff[0]
       codes     = []
       selector  = self.selector
       children1 = element1.children()
@@ -148,25 +173,23 @@
       children2.each (index)->
         child1 = $ children1[index]
         child2 = $ children2[index]
-        childSelector = "#{selector} > :eq(#{index})"
         if child1.size()
-          merge codes, new ElementDiff(child1, childSelector).diffRecursive(child2)
+          merge codes, new ElementDiff(child1, selectorChild(selector, index)).diffRecursive(child2)
         else
-          codes.push """$("#{selector}").#{self.generateCode('append', outerHTML(child2))}"""
+          codes.push "#{fnSelector selector}.#{self.generateCode('append', outerHTML(child2))}"
       index = size1
       while index > size2
-        codes.push """$("#{selector} > :eq(#{--index})").#{self.generateCode('remove')}"""
+        codes.push "#{fnSelector selectorChild(selector, --index)}.#{self.generateCode('remove')}"
       merge codes, myDiff
       codes
 
-
   $.elementDiff = ElementDiff
 
-  $.fn.elementDiff = (selector)->
-    new ElementDiff(@, selector)
-
-  $.fn.getElementDiff = (element2, selector)->
-    @elementDiff(selector).diffRecursive(element2)
+  extend $.fn,
+    elementDiff: (selector)->
+      new ElementDiff(@, selector)
+    getElementDiff: (element2, selector)->
+      @elementDiff(selector).diffRecursive(element2)
 
   @
 ) jQuery
