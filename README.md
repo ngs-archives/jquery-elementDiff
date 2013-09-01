@@ -11,13 +11,13 @@ jQuery plugin that generates JavaScript code to arrange element to be same.
 ```
 
 ## Documentation
-### `jQuery.fn.getElementDiff(element2)`
+### `jQuery.fn.getElementDiff(element2, selector = null)`
 
 Generates JavaScript code to
 
 ### `jQuery.fn.elementDiff()`
 
-Returns ElementDiff instance.
+Returns `ElementDiff` instance.
 
 ## Examples
 ```html
