@@ -512,5 +512,8 @@
       '$("#foo").attr({"id":"test-text5-2"})'
     ], 'diff with test-text5'
 
+  # test '#getDiffRecursive for README.md', ->
+  #   console.log JSON.stringify $("#sample-text1").getElementDiff($("#sample-text2"))
+  #   ok 1
 
 ) jQuery
