@@ -129,21 +129,21 @@
 
   test '#diff', ->
     ed = $('#test1 > a').elementDiff()
-    deepEqual ed.diff('<a href="#foo">Yay</a>'), ['$("\\#test1 \\> a").attr({"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null})']
-    deepEqual ed.diff('<b>Hoo</b>'), ['$("\\#test1 \\> a").replaceWith("<b>Hoo</b>")']
+    deepEqual ed.diff('<a href="#foo">Yay</a>'), ['$("#test1 > a").attr({"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null})']
+    deepEqual ed.diff('<b>Hoo</b>'), ['$("#test1 > a").replaceWith("<b>Hoo</b>")']
     ed = $('#test1').elementDiff()
-    deepEqual ed.diff('<div>Hoo</div>'), ['$("\\#test1").attr({"id":null}).html("Hoo")']
+    deepEqual ed.diff('<div>Hoo</div>'), ['$("#test1").attr({"id":null}).html("Hoo")']
 
   test '#getDiffRecursive', ->
     ed = $('#test1 > a').elementDiff()
     diff = ed.diffRecursive '<b>Yay</b>'
-    deepEqual diff, ['$("\\#test1 \\> a").replaceWith("<b>Yay</b>")']
+    deepEqual diff, ['$("#test1 > a").replaceWith("<b>Yay</b>")']
     evalScript diff
     equal $.trim($("#test1").html()), '<b>Yay</b>', 'replaces with bold tag'
     rollbackFixture()
     #
     diff = ed.diffRecursive '<a>Foo</a>'
-    deepEqual diff, ['$("\\#test1 \\> a").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).html("Foo")']
+    deepEqual diff, ['$("#test1 > a").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).html("Foo")']
     evalScript diff
     equal $.trim($("#test1").html()), '<a>Foo</a>', 'updates text and attributes'
     rollbackFixture()
@@ -151,16 +151,16 @@
     ed = $('#test1').elementDiff()
     diff = ed.diffRecursive '<div id="test1-1"><a href="http://www.google.com/" data-bar="foo" foo="1">Hoo</a><b>Baa</b></div>'
     deepEqual diff, [
-      '$("\\#test1 \\> \\:eq\\(0\\)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).html("Hoo")'
-      '$("\\#test1").append("<b>Baa</b>")'
-      '$("\\#test1").attr({"id":"test1-1"})'
+      '$("#test1 > :eq(0)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).html("Hoo")'
+      '$("#test1").append("<b>Baa</b>")'
+      '$("#test1").attr({"id":"test1-1"})'
     ]
     evalScript diff
     equal outerHTML($("#test1-1")), '<div id="test1-1"><a href="http://www.google.com/" foo="1" data-bar="foo">Hoo</a><b>Baa</b></div>'
     rollbackFixture()
     #
     diff = ed.diffRecursive '<div id="test1-2">aa</div>'
-    deepEqual diff, ['$("\\#test1").attr({"id":"test1-2"}).html("aa")']
+    deepEqual diff, ['$("#test1").attr({"id":"test1-2"}).html("aa")']
     evalScript diff
     equal outerHTML($("#test1-2")), '<div id="test1-2">aa</div>'
     rollbackFixture()
@@ -170,10 +170,10 @@
     clone.attr("id", "test-list2-2")
     diff = ed.diffRecursive clone
     deepEqual diff, [
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(0\\)").attr({"class":"item1"})'
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(2\\) \\> \\:eq\\(0\\)").attr({"href":"http://www.yahoo.com/?foo"}).html("Yahoo!!")'
-      '$("\\#test-list1 \\> \\:eq\\(0\\)").attr({"class":"list2"})'
-      '$("\\#test-list1").attr({"id":"test-list2-2"})'
+      '$("#test-list1 > :eq(0) > :eq(0)").attr({"class":"item1"})'
+      '$("#test-list1 > :eq(0) > :eq(2) > :eq(0)").attr({"href":"http://www.yahoo.com/?foo"}).html("Yahoo!!")'
+      '$("#test-list1 > :eq(0)").attr({"class":"list2"})'
+      '$("#test-list1").attr({"id":"test-list2-2"})'
     ], 'diff with test-list2'
     evalScript diff
     equal outerHTML($("#test-list2-2")), outerHTML(clone)
@@ -184,10 +184,10 @@
     clone.attr("id", "test-list3-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(0\\)").attr({"class":"item1"})'
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(3\\)").remove()'
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(2\\)").remove()'
-      '$("\\#test-list1").attr({"id":"test-list3-2"})'
+      '$("#test-list1 > :eq(0) > :eq(0)").attr({"class":"item1"})'
+      '$("#test-list1 > :eq(0) > :eq(3)").remove()'
+      '$("#test-list1 > :eq(0) > :eq(2)").remove()'
+      '$("#test-list1").attr({"id":"test-list3-2"})'
     ], 'diff with test-list3'
     evalScript diff
     equal outerHTML($("#test-list3-2")), outerHTML(clone)
@@ -198,8 +198,8 @@
     clone.attr("id", "test-list4-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("\\#test-list1 \\> \\:eq\\(0\\)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")'
-      '$("\\#test-list1").attr({"id":"test-list4-2"})'
+      '$("#test-list1 > :eq(0)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")'
+      '$("#test-list1").attr({"id":"test-list4-2"})'
     ], 'diff with test-list4'
     evalScript diff
     equal outerHTML($("#test-list4-2")), outerHTML(clone)
@@ -210,7 +210,7 @@
     clone.attr("id", "test-text2-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      """$("\\#test-text1").attr({"id":"test-text2-2"}).html(#{JSON.stringify(clone.html())})"""
+      """$("#test-text1").attr({"id":"test-text2-2"}).html(#{JSON.stringify(clone.html())})"""
     ], 'diff with test-text2'
     evalScript diff
     equal outerHTML($("#test-text2-2")), outerHTML(clone)
@@ -221,7 +221,7 @@
     clone.attr("id", "test-text3-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      """$("\\#test-text1").attr({"id":"test-text3-2"}).html(#{JSON.stringify(clone.html())})"""
+      """$("#test-text1").attr({"id":"test-text3-2"}).html(#{JSON.stringify(clone.html())})"""
     ], 'diff with test-text3'
     evalScript diff
     equal outerHTML($("#test-text3-2")), outerHTML(clone)
@@ -232,8 +232,8 @@
     clone.attr("id", "test-text4-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("\\#test-text3 \\> \\:eq\\(0\\)").html("__REPLACED__")'
-      '$("\\#test-text3").attr({"id":"test-text4-2"})'
+      '$("#test-text3 > :eq(0)").html("__REPLACED__")'
+      '$("#test-text3").attr({"id":"test-text4-2"})'
     ], 'diff with test-text4'
     evalScript diff
     equal outerHTML($("#test-text4-2")), outerHTML(clone)
@@ -243,8 +243,8 @@
     clone.attr("id", "test-text5-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("\\#test-text3 \\> \\:eq\\(0\\)").replaceWith("<b>__REPLACED__</b>")'
-      '$("\\#test-text3").attr({"id":"test-text5-2"})'
+      '$("#test-text3 > :eq(0)").replaceWith("<b>__REPLACED__</b>")'
+      '$("#test-text3").attr({"id":"test-text5-2"})'
     ], 'diff with test-text5'
     evalScript diff
     equal outerHTML($("#test-text5-2")), outerHTML(clone)
@@ -252,29 +252,29 @@
 
   test '$.fn.getElementDiff', ->
     diff = $('#test1 > a').getElementDiff('<b>Yay</b>')
-    deepEqual diff, ['$("\\#test1 \\> a").replaceWith("<b>Yay</b>")']
+    deepEqual diff, ['$("#test1 > a").replaceWith("<b>Yay</b>")']
     evalScript diff
     equal $.trim($("#test1").html()), '<b>Yay</b>', 'replaces with bold tag'
     rollbackFixture()
     #
     diff = $('#test1 > a').getElementDiff('<a>Foo</a>')
-    deepEqual diff, ['$("\\#test1 \\> a").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).html("Foo")']
+    deepEqual diff, ['$("#test1 > a").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).html("Foo")']
     evalScript diff
     equal $.trim($("#test1").html()), '<a>Foo</a>', 'updates text and attributes'
     rollbackFixture()
     #
     diff = $('#test1').getElementDiff '<div id="test1-1"><a href="http://www.google.com/" data-bar="foo" foo="1">Hoo</a><b>Baa</b></div>'
     deepEqual diff, [
-      '$("\\#test1 \\> \\:eq\\(0\\)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).html("Hoo")'
-      '$("\\#test1").append("<b>Baa</b>")'
-      '$("\\#test1").attr({"id":"test1-1"})'
+      '$("#test1 > :eq(0)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).html("Hoo")'
+      '$("#test1").append("<b>Baa</b>")'
+      '$("#test1").attr({"id":"test1-1"})'
     ]
     evalScript diff
     equal outerHTML($("#test1-1")), '<div id="test1-1"><a href="http://www.google.com/" foo="1" data-bar="foo">Hoo</a><b>Baa</b></div>'
     rollbackFixture()
     #
     diff = $('#test1').getElementDiff '<div id="test1-2">aa</div>'
-    deepEqual diff, ['$("\\#test1").attr({"id":"test1-2"}).html("aa")']
+    deepEqual diff, ['$("#test1").attr({"id":"test1-2"}).html("aa")']
     evalScript diff
     equal outerHTML($("#test1-2")), '<div id="test1-2">aa</div>'
     rollbackFixture()
@@ -283,10 +283,10 @@
     clone.attr("id", "test-list2-2")
     diff = $('#test-list1').getElementDiff clone
     deepEqual diff, [
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(0\\)").attr({"class":"item1"})'
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(2\\) \\> \\:eq\\(0\\)").attr({"href":"http://www.yahoo.com/?foo"}).html("Yahoo!!")'
-      '$("\\#test-list1 \\> \\:eq\\(0\\)").attr({"class":"list2"})'
-      '$("\\#test-list1").attr({"id":"test-list2-2"})'
+      '$("#test-list1 > :eq(0) > :eq(0)").attr({"class":"item1"})'
+      '$("#test-list1 > :eq(0) > :eq(2) > :eq(0)").attr({"href":"http://www.yahoo.com/?foo"}).html("Yahoo!!")'
+      '$("#test-list1 > :eq(0)").attr({"class":"list2"})'
+      '$("#test-list1").attr({"id":"test-list2-2"})'
     ], 'diff with test-list2'
     evalScript diff
     equal outerHTML($("#test-list2-2")), outerHTML(clone)
@@ -296,10 +296,10 @@
     clone.attr("id", "test-list3-2")
     diff = $('#test-list1').getElementDiff outerHTML(clone)
     deepEqual diff, [
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(0\\)").attr({"class":"item1"})'
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(3\\)").remove()'
-      '$("\\#test-list1 \\> \\:eq\\(0\\) \\> \\:eq\\(2\\)").remove()'
-      '$("\\#test-list1").attr({"id":"test-list3-2"})'
+      '$("#test-list1 > :eq(0) > :eq(0)").attr({"class":"item1"})'
+      '$("#test-list1 > :eq(0) > :eq(3)").remove()'
+      '$("#test-list1 > :eq(0) > :eq(2)").remove()'
+      '$("#test-list1").attr({"id":"test-list3-2"})'
     ], 'diff with test-list3'
     evalScript diff
     equal outerHTML($("#test-list3-2")), outerHTML(clone)
@@ -309,8 +309,8 @@
     clone.attr("id", "test-list4-2")
     diff = $('#test-list1').getElementDiff outerHTML(clone)
     deepEqual diff, [
-      '$("\\#test-list1 \\> \\:eq\\(0\\)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")'
-      '$("\\#test-list1").attr({"id":"test-list4-2"})'
+      '$("#test-list1 > :eq(0)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")'
+      '$("#test-list1").attr({"id":"test-list4-2"})'
     ], 'diff with test-list4'
     evalScript diff
     equal outerHTML($("#test-list4-2")), outerHTML(clone)
@@ -320,7 +320,7 @@
     clone.attr("id", "test-text2-2")
     diff = $('#test-text1').getElementDiff outerHTML(clone)
     deepEqual diff, [
-      """$("\\#test-text1").attr({"id":"test-text2-2"}).html(#{JSON.stringify(clone.html())})"""
+      """$("#test-text1").attr({"id":"test-text2-2"}).html(#{JSON.stringify(clone.html())})"""
     ], 'diff with test-text2'
     evalScript diff
     equal outerHTML($("#test-text2-2")), outerHTML(clone)
@@ -330,7 +330,7 @@
     clone.attr("id", "test-text3-2")
     diff = $('#test-text1').getElementDiff outerHTML(clone)
     deepEqual diff, [
-      """$("\\#test-text1").attr({"id":"test-text3-2"}).html(#{JSON.stringify(clone.html())})"""
+      """$("#test-text1").attr({"id":"test-text3-2"}).html(#{JSON.stringify(clone.html())})"""
     ], 'diff with test-text3'
     evalScript diff
     equal outerHTML($("#test-text3-2")), outerHTML(clone)
@@ -340,8 +340,8 @@
     clone.attr("id", "test-text4-2")
     diff = $('#test-text3').getElementDiff outerHTML(clone)
     deepEqual diff, [
-      '$("\\#test-text3 \\> \\:eq\\(0\\)").html("__REPLACED__")'
-      '$("\\#test-text3").attr({"id":"test-text4-2"})'
+      '$("#test-text3 > :eq(0)").html("__REPLACED__")'
+      '$("#test-text3").attr({"id":"test-text4-2"})'
     ], 'diff with test-text4'
     evalScript diff
     equal outerHTML($("#test-text4-2")), outerHTML(clone)
@@ -351,8 +351,8 @@
     clone.attr("id", "test-text5-2")
     diff = $('#test-text3').getElementDiff outerHTML(clone)
     deepEqual diff, [
-      '$("\\#test-text3 \\> \\:eq\\(0\\)").replaceWith("<b>__REPLACED__</b>")'
-      '$("\\#test-text3").attr({"id":"test-text5-2"})'
+      '$("#test-text3 > :eq(0)").replaceWith("<b>__REPLACED__</b>")'
+      '$("#test-text3").attr({"id":"test-text5-2"})'
     ], 'diff with test-text5'
     evalScript diff
     equal outerHTML($("#test-text5-2")), outerHTML(clone)
@@ -361,31 +361,31 @@
   test '#getDiffRecursive with selector', ->
     ed = $('#test1 > a').elementDiff('#foo')
     diff = ed.diffRecursive '<b>Yay</b>'
-    deepEqual diff, ['$("\\#foo").replaceWith("<b>Yay</b>")']
+    deepEqual diff, ['$("#foo").replaceWith("<b>Yay</b>")']
     #
     diff = ed.diffRecursive '<a>Foo</a>'
-    deepEqual diff, ['$("\\#foo").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).html("Foo")']
+    deepEqual diff, ['$("#foo").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).html("Foo")']
     #
     ed = $('#test1').elementDiff('#foo')
     diff = ed.diffRecursive '<div id="test1-1"><a href="http://www.google.com/" data-bar="foo" foo="1">Hoo</a><b>Baa</b></div>'
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).html("Hoo")'
-      '$("\\#foo").append("<b>Baa</b>")'
-      '$("\\#foo").attr({"id":"test1-1"})'
+      '$("#foo > :eq(0)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).html("Hoo")'
+      '$("#foo").append("<b>Baa</b>")'
+      '$("#foo").attr({"id":"test1-1"})'
     ]
     #
     diff = ed.diffRecursive '<div id="test1-2">aa</div>'
-    deepEqual diff, ['$("\\#foo").attr({"id":"test1-2"}).html("aa")']
+    deepEqual diff, ['$("#foo").attr({"id":"test1-2"}).html("aa")']
     #
     ed = $('#test-list1').elementDiff('#foo')
     clone = $("#test-list2").clone()
     clone.attr("id", "test-list2-2")
     diff = ed.diffRecursive clone
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(0\\)").attr({"class":"item1"})'
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(2\\) \\> \\:eq\\(0\\)").attr({"href":"http://www.yahoo.com/?foo"}).html("Yahoo!!")'
-      '$("\\#foo \\> \\:eq\\(0\\)").attr({"class":"list2"})'
-      '$("\\#foo").attr({"id":"test-list2-2"})'
+      '$("#foo > :eq(0) > :eq(0)").attr({"class":"item1"})'
+      '$("#foo > :eq(0) > :eq(2) > :eq(0)").attr({"href":"http://www.yahoo.com/?foo"}).html("Yahoo!!")'
+      '$("#foo > :eq(0)").attr({"class":"list2"})'
+      '$("#foo").attr({"id":"test-list2-2"})'
     ], 'diff with test-list2'
     #
     ed = $('#test-list1').elementDiff('#foo')
@@ -393,10 +393,10 @@
     clone.attr("id", "test-list3-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(0\\)").attr({"class":"item1"})'
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(3\\)").remove()'
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(2\\)").remove()'
-      '$("\\#foo").attr({"id":"test-list3-2"})'
+      '$("#foo > :eq(0) > :eq(0)").attr({"class":"item1"})'
+      '$("#foo > :eq(0) > :eq(3)").remove()'
+      '$("#foo > :eq(0) > :eq(2)").remove()'
+      '$("#foo").attr({"id":"test-list3-2"})'
     ], 'diff with test-list3'
 
     ed = $('#test-list1').elementDiff('#foo')
@@ -404,8 +404,8 @@
     clone.attr("id", "test-list4-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")'
-      '$("\\#foo").attr({"id":"test-list4-2"})'
+      '$("#foo > :eq(0)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")'
+      '$("#foo").attr({"id":"test-list4-2"})'
     ], 'diff with test-list4'
 
     ed = $('#test-text1').elementDiff('#foo')
@@ -413,7 +413,7 @@
     clone.attr("id", "test-text2-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      """$("\\#foo").attr({"id":"test-text2-2"}).html(#{JSON.stringify(clone.html())})"""
+      """$("#foo").attr({"id":"test-text2-2"}).html(#{JSON.stringify(clone.html())})"""
     ], 'diff with test-text2'
 
     ed = $('#test-text1').elementDiff('#foo')
@@ -421,7 +421,7 @@
     clone.attr("id", "test-text3-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      """$("\\#foo").attr({"id":"test-text3-2"}).html(#{JSON.stringify(clone.html())})"""
+      """$("#foo").attr({"id":"test-text3-2"}).html(#{JSON.stringify(clone.html())})"""
     ], 'diff with test-text3'
 
     ed = $('#test-text3').elementDiff('#foo')
@@ -429,91 +429,91 @@
     clone.attr("id", "test-text4-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\)").html("__REPLACED__")'
-      '$("\\#foo").attr({"id":"test-text4-2"})'
+      '$("#foo > :eq(0)").html("__REPLACED__")'
+      '$("#foo").attr({"id":"test-text4-2"})'
     ], 'diff with test-text4'
 
     clone = $("#test-text5").clone()
     clone.attr("id", "test-text5-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\)").replaceWith("<b>__REPLACED__</b>")'
-      '$("\\#foo").attr({"id":"test-text5-2"})'
+      '$("#foo > :eq(0)").replaceWith("<b>__REPLACED__</b>")'
+      '$("#foo").attr({"id":"test-text5-2"})'
     ], 'diff with test-text5'
 
   test '$.fn.getElementDiff with selector', ->
     diff = $('#test1 > a').getElementDiff('<b>Yay</b>', '#foo')
-    deepEqual diff, ['$("\\#foo").replaceWith("<b>Yay</b>")']
+    deepEqual diff, ['$("#foo").replaceWith("<b>Yay</b>")']
     #
     diff = $('#test1 > a').getElementDiff('<a>Foo</a>', '#foo')
-    deepEqual diff, ['$("\\#foo").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).html("Foo")']
+    deepEqual diff, ['$("#foo").attr({"href":null,"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null}).html("Foo")']
     #
     diff = $('#test1').getElementDiff '<div id="test1-1"><a href="http://www.google.com/" data-bar="foo" foo="1">Hoo</a><b>Baa</b></div>', '#foo'
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).html("Hoo")'
-      '$("\\#foo").append("<b>Baa</b>")'
-      '$("\\#foo").attr({"id":"test1-1"})'
+      '$("#foo > :eq(0)").attr({"href":"http://www.google.com/","data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"data-bar":"foo","foo":1}).html("Hoo")'
+      '$("#foo").append("<b>Baa</b>")'
+      '$("#foo").attr({"id":"test1-1"})'
     ]
     #
     diff = $('#test1').getElementDiff '<div id="test1-2">aa</div>', '#foo'
-    deepEqual diff, ['$("\\#foo").attr({"id":"test1-2"}).html("aa")']
+    deepEqual diff, ['$("#foo").attr({"id":"test1-2"}).html("aa")']
     #
     clone = $("#test-list2").clone()
     clone.attr("id", "test-list2-2")
     diff = $('#test-list1').getElementDiff clone, '#foo'
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(0\\)").attr({"class":"item1"})'
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(2\\) \\> \\:eq\\(0\\)").attr({"href":"http://www.yahoo.com/?foo"}).html("Yahoo!!")'
-      '$("\\#foo \\> \\:eq\\(0\\)").attr({"class":"list2"})'
-      '$("\\#foo").attr({"id":"test-list2-2"})'
+      '$("#foo > :eq(0) > :eq(0)").attr({"class":"item1"})'
+      '$("#foo > :eq(0) > :eq(2) > :eq(0)").attr({"href":"http://www.yahoo.com/?foo"}).html("Yahoo!!")'
+      '$("#foo > :eq(0)").attr({"class":"list2"})'
+      '$("#foo").attr({"id":"test-list2-2"})'
     ], 'diff with test-list2'
     #
     clone = $("#test-list3").clone()
     clone.attr("id", "test-list3-2")
     diff = $('#test-list1').getElementDiff outerHTML(clone), '#foo'
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(0\\)").attr({"class":"item1"})'
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(3\\)").remove()'
-      '$("\\#foo \\> \\:eq\\(0\\) \\> \\:eq\\(2\\)").remove()'
-      '$("\\#foo").attr({"id":"test-list3-2"})'
+      '$("#foo > :eq(0) > :eq(0)").attr({"class":"item1"})'
+      '$("#foo > :eq(0) > :eq(3)").remove()'
+      '$("#foo > :eq(0) > :eq(2)").remove()'
+      '$("#foo").attr({"id":"test-list3-2"})'
     ], 'diff with test-list3'
 
     clone = $("#test-list4").clone()
     clone.attr("id", "test-list4-2")
     diff = $('#test-list1').getElementDiff outerHTML(clone), '#foo'
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")'
-      '$("\\#foo").attr({"id":"test-list4-2"})'
+      '$("#foo > :eq(0)").replaceWith("<ol class=\\"list1\\"><li class=\\"item1\\"><a href=\\"http://www.apple.com/\\">Apple</a></li><li class=\\"item\\"><a href=\\"http://www.microsoft.com/\\" id=\\"link-microsoft\\">Microsoft</a></li></ol>")'
+      '$("#foo").attr({"id":"test-list4-2"})'
     ], 'diff with test-list4'
 
     clone = $("#test-text2").clone()
     clone.attr("id", "test-text2-2")
     diff = $('#test-text1').getElementDiff outerHTML(clone), '#foo'
     deepEqual diff, [
-      """$("\\#foo").attr({"id":"test-text2-2"}).html(#{JSON.stringify(clone.html())})"""
+      """$("#foo").attr({"id":"test-text2-2"}).html(#{JSON.stringify(clone.html())})"""
     ], 'diff with test-text2'
 
     clone = $("#test-text3").clone()
     clone.attr("id", "test-text3-2")
     diff = $('#test-text1').getElementDiff outerHTML(clone), '#foo'
     deepEqual diff, [
-      """$("\\#foo").attr({"id":"test-text3-2"}).html(#{JSON.stringify(clone.html())})"""
+      """$("#foo").attr({"id":"test-text3-2"}).html(#{JSON.stringify(clone.html())})"""
     ], 'diff with test-text3'
 
     clone = $("#test-text4").clone()
     clone.attr("id", "test-text4-2")
     diff = $('#test-text3').getElementDiff outerHTML(clone), '#foo'
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\)").html("__REPLACED__")'
-      '$("\\#foo").attr({"id":"test-text4-2"})'
+      '$("#foo > :eq(0)").html("__REPLACED__")'
+      '$("#foo").attr({"id":"test-text4-2"})'
     ], 'diff with test-text4'
 
     clone = $("#test-text5").clone()
     clone.attr("id", "test-text5-2")
     diff = $('#test-text3').getElementDiff outerHTML(clone), '#foo'
     deepEqual diff, [
-      '$("\\#foo \\> \\:eq\\(0\\)").replaceWith("<b>__REPLACED__</b>")'
-      '$("\\#foo").attr({"id":"test-text5-2"})'
+      '$("#foo > :eq(0)").replaceWith("<b>__REPLACED__</b>")'
+      '$("#foo").attr({"id":"test-text5-2"})'
     ], 'diff with test-text5'
 
   test '#getDiffRecursive with replaceWith, html or empty', ->
@@ -522,8 +522,8 @@
     clone.attr("id", "test-list6-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("div\\[id\\=\\"test-list5\\"\\] \\> \\:eq\\(0\\) \\> \\:eq\\(1\\) \\> \\:eq\\(0\\)").html("Microsoft!")'
-      """$("div\\[id\\=\\"test-list5\\"\\]").attr({"id":"test-list6-2","onclick":"$(this).find('ol').replaceWith('<b>Yay!</b>');"})"""
+      '$("div[id=\\"test-list5\\"] > :eq(0) > :eq(1) > :eq(0)").html("Microsoft!")'
+      """$("div[id=\\"test-list5\\"]").attr({"id":"test-list6-2","onclick":"$(this).find('ol').replaceWith('<b>Yay!</b>');"})"""
     ], 'diff with test-list6'
     evalScript diff
     equal outerHTML($("#test-list6-2")), outerHTML(clone)
@@ -534,8 +534,8 @@
     clone.attr("id", "test-list7-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("div\\[id\\=\\"test-list5\\"\\] \\> \\:eq\\(0\\) \\> \\:eq\\(1\\) \\> \\:eq\\(0\\)").html("Microsoft!")'
-      """$("div\\[id\\=\\"test-list5\\"\\]").attr({"id":"test-list7-2","onclick":"$(this).find('ol').html('<li>Yay!</li>');"})"""
+      '$("div[id=\\"test-list5\\"] > :eq(0) > :eq(1) > :eq(0)").html("Microsoft!")'
+      """$("div[id=\\"test-list5\\"]").attr({"id":"test-list7-2","onclick":"$(this).find('ol').html('<li>Yay!</li>');"})"""
     ], 'diff with test-list7'
     evalScript diff
     equal outerHTML($("#test-list7-2")), outerHTML(clone)
@@ -546,8 +546,8 @@
     clone.attr("id", "test-list8-2")
     diff = ed.diffRecursive outerHTML(clone)
     deepEqual diff, [
-      '$("div\\[id\\=\\"test-list5\\"\\] \\> \\:eq\\(0\\) \\> \\:eq\\(1\\) \\> \\:eq\\(0\\)").html("Microsoft!")'
-      """$("div\\[id\\=\\"test-list5\\"\\]").attr({"id":"test-list8-2","onclick":"$(this).find('ol').empty();"})"""
+      '$("div[id=\\"test-list5\\"] > :eq(0) > :eq(1) > :eq(0)").html("Microsoft!")'
+      """$("div[id=\\"test-list5\\"]").attr({"id":"test-list8-2","onclick":"$(this).find('ol').empty();"})"""
     ], 'diff with test-list8'
     evalScript diff
     equal outerHTML($("#test-list8-2")), outerHTML(clone)

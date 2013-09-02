@@ -38,7 +38,7 @@
       return getTextContents(obj).length > 0;
     };
     escapeSelector = function(selector) {
-      return selector.replace(/([\!\"\#\$\%\&'\(\)\*\+\,\.\/\:\;<\=>\?\@\[\\\]\^\`\{\|\}\~])/g, "\\$1");
+      return selector.replace(/(")/g, "\\$1");
     };
     fnSelector = function(selector) {
       return "$(\"" + (escapeSelector(selector)) + "\")";

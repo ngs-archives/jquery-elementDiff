@@ -36,7 +36,7 @@
     getTextContents(obj).length > 0
 
   escapeSelector = (selector)->
-    selector.replace /([\!\"\#\$\%\&'\(\)\*\+\,\.\/\:\;<\=>\?\@\[\\\]\^\`\{\|\}\~])/g, "\\$1"
+    selector.replace /(")/g, "\\$1"
 
   fnSelector = (selector)->
     """$("#{escapeSelector selector}")"""
