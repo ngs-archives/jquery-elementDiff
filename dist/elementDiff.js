@@ -1,4 +1,4 @@
-/*! jQuery Element Diff - v0.1.0 - 2013-09-02
+/*! jQuery Element Diff - v0.1.1 - 2013-09-02
  * https://github.com/ngs/jquery-elementDiff
  * Copyright (c) 2013 Atsushi Nagase; Licensed MIT */
 (function() {
