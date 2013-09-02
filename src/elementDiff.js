@@ -3,7 +3,7 @@
   (function($) {
     "use strict";
 
-    var ElementDiff, LF, VALUE_REGEX, diffObjects, duplicate, extend, flattenAttributes, fnSelector, getTextContents, hasTextNode, inArray, isEmptyObject, isValue, map, merge, nullDeeply, outerHTML, selectorChild, trim;
+    var ElementDiff, LF, VALUE_REGEX, diffObjects, duplicate, escapeSelector, extend, flattenAttributes, fnSelector, getTextContents, hasTextNode, inArray, isEmptyObject, isValue, map, merge, nullDeeply, outerHTML, selectorChild, trim;
     LF = "\n";
     map = $.map;
     extend = $.extend;
@@ -37,8 +37,11 @@
     hasTextNode = function(obj) {
       return getTextContents(obj).length > 0;
     };
+    escapeSelector = function(selector) {
+      return selector.replace(/([\!\"\#\$\%\&'\(\)\*\+\,\.\/\:\;<\=>\?\@\[\\\]\^\`\{\|\}\~])/g, "\\$1");
+    };
     fnSelector = function(selector) {
-      return "$(\"" + selector + "\")";
+      return "$(\"" + (escapeSelector(selector)) + "\")";
     };
     selectorChild = function(selector, index) {
       return "" + selector + " > :eq(" + index + ")";
@@ -224,13 +227,24 @@
       };
 
       ElementDiff.prototype.diffRecursive = function(element2) {
-        var children1, children2, codes, element1, index, myDiff, selector, self, size1, size2;
+        var children1, children2, codes, element1, fn, index, myDiff, selector, self, size1, size2, testElement;
         self = this;
         element1 = self.element;
         element2 = $(element2);
         myDiff = self.diff(element2);
-        if (/\.(empty|replaceWith|html)\(/.test(myDiff[0])) {
+        if (!this.isSameTag(element2)) {
           return myDiff;
+        }
+        if (myDiff[0]) {
+          testElement = element1.clone();
+          fn = myDiff[0].replace(/^\$\("(.*?)"\)\./, 'ele.');
+          /* jshint -W054
+          */
+
+          new Function('ele', fn).call(this, testElement);
+          if (testElement.html() !== element1.html()) {
+            return myDiff;
+          }
         }
         codes = [];
         selector = self.selector;

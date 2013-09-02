@@ -35,8 +35,11 @@
   hasTextNode = (obj)->
     getTextContents(obj).length > 0
 
+  escapeSelector = (selector)->
+    selector.replace /([\!\"\#\$\%\&'\(\)\*\+\,\.\/\:\;<\=>\?\@\[\\\]\^\`\{\|\}\~])/g, "\\$1"
+
   fnSelector = (selector)->
-    """$("#{selector}")"""
+    """$("#{escapeSelector selector}")"""
 
   selectorChild = (selector, index)->
     "#{selector} > :eq(#{index})"
@@ -163,7 +166,13 @@
       element1  = self.element
       element2  = $ element2
       myDiff    = self.diff element2
-      return myDiff if /\.(empty|replaceWith|html)\(/.test myDiff[0]
+      return myDiff unless @isSameTag element2
+      if myDiff[0]
+        testElement = element1.clone()
+        fn = myDiff[0].replace(/^\$\("(.*?)"\)\./, 'ele.')
+        ### jshint -W054 ###
+        new Function('ele', fn).call(@, testElement)
+        return myDiff if testElement.html() isnt element1.html()
       codes     = []
       selector  = self.selector
       children1 = element1.children()

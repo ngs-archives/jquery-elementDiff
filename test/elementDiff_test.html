@@ -51,6 +51,30 @@
         <li class="item"><a href="http://www.microsoft.com/" id="link-microsoft">Microsoft</a></li>
       </ul>
     </div>
+    <div id="test-list5">
+      <ol class="list1">
+        <li class="item1"><a href="http://www.apple.com/">Apple</a></li>
+        <li class="item"><a href="http://www.microsoft.com/" id="link-microsoft">Microsoft</a></li>
+      </ul>
+    </div>
+    <div id="test-list6" onclick="$(this).find('ol').replaceWith('<b>Yay!</b>');">
+      <ol class="list1">
+        <li class="item1"><a href="http://www.apple.com/">Apple</a></li>
+        <li class="item"><a href="http://www.microsoft.com/" id="link-microsoft">Microsoft!</a></li>
+      </ul>
+    </div>
+    <div id="test-list7" onclick="$(this).find('ol').html('<li>Yay!</li>');">
+      <ol class="list1">
+        <li class="item1"><a href="http://www.apple.com/">Apple</a></li>
+        <li class="item"><a href="http://www.microsoft.com/" id="link-microsoft">Microsoft!</a></li>
+      </ul>
+    </div>
+    <div id="test-list8" onclick="$(this).find('ol').empty();">
+      <ol class="list1">
+        <li class="item1"><a href="http://www.apple.com/">Apple</a></li>
+        <li class="item"><a href="http://www.microsoft.com/" id="link-microsoft">Microsoft!</a></li>
+      </ul>
+    </div>
     <div id="test-text1">Lorem ipsum
       dolor sit amet, consectetur adipiscing elit.
     </div>
