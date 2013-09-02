@@ -2,3 +2,4 @@
 .DS_Store
 *.swp
 npm-debug.log
+/bower_components/
