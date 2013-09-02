@@ -42,15 +42,20 @@ Returns `ElementDiff` instance.
 
 ```javascript
 $("#sample-text1").getElementDiff($("#sample-text2"));
-// [
-//   "$(\"\\#sample-text1 \\> \\:eq\\(0\\)\").attr({\"id\":\"dolor\"})",
-//   "$(\"\\#sample-text1 \\> \\:eq\\(1\\)\").html(\"sit!\")",
-//   "$(\"\\#sample-text1 \\> \\:eq\\(2\\)\").replaceWith(\"<b class=\\\"span3\\\">amet</b>\")",
-//   "$(\"\\#sample-text1 \\> \\:eq\\(3\\)\").attr({\"class\":\"span5\"}).html(\"adipiscing\")",
-//   "$(\"\\#sample-text1 \\> \\:eq\\(4\\)\").attr({\"class\":\"span6\"}).html(\"elit\")",
-//   "$(\"\\#sample-text1 \\> \\:eq\\(5\\)\").remove()",
-//   "$(\"\\#sample-text1\").attr({\"id\":\"sample-text2\"})"
-// ]
+```
+
+Returns:
+
+```javascript
+[
+  "$(\"#sample-text1 > :eq(0)\").attr({\"id\":\"dolor\"})",
+  "$(\"#sample-text1 > :eq(1)\").html(\"sit!\")",
+  "$(\"#sample-text1 > :eq(2)\").replaceWith(\"<b class=\\\"span3\\\">amet</b>\")",
+  "$(\"#sample-text1 > :eq(3)\").attr({\"class\":\"span5\"}).html(\"adipiscing\")",
+  "$(\"#sample-text1 > :eq(4)\").attr({\"class\":\"span6\"}).html(\"elit\")",
+  "$(\"#sample-text1 > :eq(5)\").remove()",
+  "$(\"#sample-text1\").attr({\"id\":\"sample-text2\"})"
+]
 ```
 
 ## Testing
