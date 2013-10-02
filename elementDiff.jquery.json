@@ -2,7 +2,7 @@
   "name": "elementDiff",
   "title": "jQuery Element Diff",
   "description": "jQuery plugin that generates JavaScript code to arrange element to be same.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "homepage": "https://github.com/ngs/jquery-elementDiff",
   "author": {
     "name": "Atsushi Nagase",

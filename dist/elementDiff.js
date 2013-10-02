@@ -1,4 +1,4 @@
-/*! jQuery Element Diff - v0.1.1 - 2013-09-02
+/*! jQuery Element Diff - v0.1.3 - 2013-10-02
  * https://github.com/ngs/jquery-elementDiff
  * Copyright (c) 2013 Atsushi Nagase; Licensed MIT */
 (function() {
@@ -41,7 +41,7 @@
       return getTextContents(obj).length > 0;
     };
     escapeSelector = function(selector) {
-      return selector.replace(/([\!\"\#\$\%\&'\(\)\*\+\,\.\/\:\;<\=>\?\@\[\\\]\^\`\{\|\}\~])/g, "\\$1");
+      return selector.replace(/(")/g, "\\$1");
     };
     fnSelector = function(selector) {
       return "$(\"" + (escapeSelector(selector)) + "\")";
