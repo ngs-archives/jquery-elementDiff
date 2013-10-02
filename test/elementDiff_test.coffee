@@ -126,6 +126,7 @@
     ed = $('#test1 > a').elementDiff()
     ok  ed.isSameTag('<a href="#foo">Yay</a>'), 'returns true for same tag'
     ok !ed.isSameTag('<b>Yay</b>'), 'returns true for different tag'
+    ok !ed.isSameTag('<a>Yay</a><a>Yay</a><a>Yay</a>'), 'returns false for plural elements'
 
   test '#diff', ->
     ed = $('#test1 > a').elementDiff()
@@ -140,6 +141,13 @@
     deepEqual diff, ['$("#test1 > a").replaceWith("<b>Yay</b>")']
     evalScript diff
     equal $.trim($("#test1").html()), '<b>Yay</b>', 'replaces with bold tag'
+    rollbackFixture()
+    #
+    ed = $('#test1 > a').elementDiff()
+    diff = ed.diffRecursive '<a>Yay</a><a>Yay</a><a>Yay</a>'
+    deepEqual diff, ['$("#test1 > a").replaceWith("<a>Yay</a><a>Yay</a><a>Yay</a>")']
+    evalScript diff
+    equal $.trim($("#test1").html()), '<a>Yay</a><a>Yay</a><a>Yay</a>', 'replaces with plural anchors'
     rollbackFixture()
     #
     diff = ed.diffRecursive '<a>Foo</a>'

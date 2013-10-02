@@ -142,7 +142,8 @@
 
     isSameTag: (element2)->
       NODE_NAME = 'nodeName'
-      @element.prop(NODE_NAME) is $(element2).prop(NODE_NAME)
+      element2 = $ element2
+      element2.size() == 1 and @element.prop(NODE_NAME) is element2.prop(NODE_NAME)
 
     diff: (element2)->
       element1 = @element

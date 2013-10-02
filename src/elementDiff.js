@@ -197,7 +197,8 @@
       ElementDiff.prototype.isSameTag = function(element2) {
         var NODE_NAME;
         NODE_NAME = 'nodeName';
-        return this.element.prop(NODE_NAME) === $(element2).prop(NODE_NAME);
+        element2 = $(element2);
+        return element2.size() === 1 && this.element.prop(NODE_NAME) === element2.prop(NODE_NAME);
       };
 
       ElementDiff.prototype.diff = function(element2) {
