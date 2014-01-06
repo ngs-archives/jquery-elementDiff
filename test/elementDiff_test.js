@@ -207,7 +207,9 @@
       deepEqual(ed.diff('<a href="#foo">Yay</a>'), ['$("#test1 > a").attr({"data-foo":null,"data-foo-bar":null,"data-foo-bar-baz":null,"foo":null})']);
       deepEqual(ed.diff('<b>Hoo</b>'), ['$("#test1 > a").replaceWith("<b>Hoo</b>")']);
       ed = $('#test1').elementDiff();
-      return deepEqual(ed.diff('<div>Hoo</div>'), ['$("#test1").attr({"id":null}).html("Hoo")']);
+      deepEqual(ed.diff('<div>Hoo</div>'), ['$("#test1").attr({"id":null}).html("Hoo")']);
+      ed = $('<iframe src="http://example.com/"></iframe>').elementDiff();
+      return deepEqual(ed.diff('<iframe src="http://example.com/foo"></iframe>'), ['attr({"src":"http://example.com/foo"})']);
     });
     test('#getDiffRecursive', function() {
       var clone, diff, ed;
