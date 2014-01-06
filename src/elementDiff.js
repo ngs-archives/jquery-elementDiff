@@ -27,7 +27,9 @@
     };
     getTextContents = function(obj) {
       var nodes;
-      nodes = obj.contents().filter(function() {
+      nodes = obj.filter(function() {
+        return this.nodeType !== 1 || this.nodeName !== "IFRAME";
+      }).contents().filter(function() {
         return this.nodeType === 3 && trim(this.data);
       }).get();
       return map(nodes, function(node) {

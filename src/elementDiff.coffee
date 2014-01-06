@@ -27,7 +27,9 @@
     yes
 
   getTextContents = (obj)->
-    nodes = obj.contents()
+    nodes = obj
+      .filter( -> @nodeType != 1 || @nodeName != "IFRAME" )
+      .contents()
       .filter( -> @nodeType == 3 && trim @data )
       .get()
     map nodes, (node)-> trim node.data
