@@ -32,6 +32,7 @@
   test ':getTextContents', ->
     deepEqual $.elementDiff.getTextContents($("<a>A\n  <span>B</span>\n  C</a>")), ['A', 'C']
     deepEqual $.elementDiff.getTextContents($("<a>\n  <span>B</span>\n  </a>")), []
+    deepEqual $.elementDiff.getTextContents($("<iframe></iframe>")), []
 
   test ':hasTextNode', ->
     ok !$.elementDiff.hasTextNode $("<div>\n  <a>OK</a>\n  </div>")
