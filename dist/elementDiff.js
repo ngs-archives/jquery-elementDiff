@@ -1,6 +1,6 @@
-/*! jQuery Element Diff - v0.1.4 - 2013-10-02
+/*! jQuery Element Diff - v0.1.5 - 2014-01-06
  * https://github.com/ngs/jquery-elementDiff
- * Copyright (c) 2013 Atsushi Nagase; Licensed MIT */
+ * Copyright (c) 2014 Atsushi Nagase; Licensed MIT */
 (function() {
 
   (function($) {
@@ -30,7 +30,9 @@
     };
     getTextContents = function(obj) {
       var nodes;
-      nodes = obj.contents().filter(function() {
+      nodes = obj.filter(function() {
+        return this.nodeType !== 1 || this.nodeName !== "IFRAME";
+      }).contents().filter(function() {
         return this.nodeType === 3 && trim(this.data);
       }).get();
       return map(nodes, function(node) {
