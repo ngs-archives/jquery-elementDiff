@@ -1,4 +1,4 @@
-/*! jQuery Element Diff - v0.1.5 - 2014-01-06
+/*! jQuery Element Diff - v0.2.0 - 2014-05-01
  * https://github.com/ngs/jquery-elementDiff
  * Copyright (c) 2014 Atsushi Nagase; Licensed MIT */
 (function() {
@@ -209,12 +209,18 @@
       ElementDiff.prototype.diff = function(element2) {
         var code, codes, element1;
         element1 = this.element;
+        if (typeof element2 === 'string') {
+          element2 = element2.replace(/<(\/?)body([^>]*)>/ig, "<$1div$2>");
+        }
         element2 = $(element2);
         if (!(element2 && element2.size())) {
           return [];
         }
         codes = [];
-        if (this.isSameTag(element2)) {
+        if (element1.is('body')) {
+          merge(codes, this.diffAttributes(element2));
+          codes.push(this.generateCode('html', element2.html()));
+        } else if (this.isSameTag(element2)) {
           merge(codes, this.diffAttributes(element2));
           merge(codes, this.diffText(element2));
         } else {
