@@ -149,14 +149,21 @@
 
     diff: (element2)->
       element1 = @element
+      orgElement2 = element2
+      isBody1 = element1.is('body')
+      isBody2 = no
       if typeof element2 is 'string'
         element2 = element2.replace /<(\/?)body([^>]*)>/ig, "<$1div$2>"
+        isBody2 = orgElement2 != element2
       element2 = $ element2
       return [] unless element2 && element2.size()
       codes = []
-      if element1.is('body')
-        merge codes, @diffAttributes(element2)
-        codes.push @generateCode 'html', element2.html()
+      if isBody1
+        if isBody2
+          merge codes, @diffAttributes(element2)
+          codes.push @generateCode 'html', element2.html()
+        else
+          codes.push @generateCode 'html', orgElement2
       else if @isSameTag element2
         merge codes, @diffAttributes(element2)
         merge codes, @diffText(element2)

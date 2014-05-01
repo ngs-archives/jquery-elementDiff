@@ -139,6 +139,8 @@
     deepEqual ed.diff('<iframe src="http://example.com/foo"></iframe>'), ['attr({"src":"http://example.com/foo"})']
     ed = $('body').elementDiff()
     deepEqual ed.diff('<body class="foo">bar</body>'), ['$("body").attr({"style":null,"class":"foo"}).html("bar")']
+    ed = $('body').elementDiff()
+    deepEqual ed.diff('<p class="foo">bar</p>'), ['$("body").html("<p class=\\"foo\\">bar</p>")']
 
   test '#getDiffRecursive', ->
     ed = $('#test1 > a').elementDiff()
