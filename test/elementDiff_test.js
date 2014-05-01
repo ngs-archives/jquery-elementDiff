@@ -210,7 +210,9 @@
       ed = $('#test1').elementDiff();
       deepEqual(ed.diff('<div>Hoo</div>'), ['$("#test1").attr({"id":null}).html("Hoo")']);
       ed = $('<iframe src="http://example.com/"></iframe>').elementDiff();
-      return deepEqual(ed.diff('<iframe src="http://example.com/foo"></iframe>'), ['attr({"src":"http://example.com/foo"})']);
+      deepEqual(ed.diff('<iframe src="http://example.com/foo"></iframe>'), ['attr({"src":"http://example.com/foo"})']);
+      ed = $('body').elementDiff();
+      return deepEqual(ed.diff('<body class="foo">bar</body>'), ['$("body").attr({"style":null,"class":"foo"}).html("bar")']);
     });
     test('#getDiffRecursive', function() {
       var clone, diff, ed;
